@@ -398,90 +398,172 @@ window.addEventListener("resize",fitCurrent);
 
 /* =================================================================
    4. どりるの もんだい
-   ・ざひょうは [よこ, たて]。ひだりうえが [0,0]（9ろばん）
-   ・とる：まえからの 10もん（そのまま）
-   ・ほかの てーまは「もとの かたち」を かいておくと、
-     まわしたり うらがえしたり した もんだいを じどうで つくって 10もんに します
-   ・もんだいを ふやすときは、BASES の はいれつに 1つ たすだけで OK
-   ・hint は むきの ことば（うえ・した など）を つかわずに かく
-     （まわした もんだいでも おかしく ならないように）
+   ・もんだいは 9ろばんの「え」で かきます（1ぎょう 9もじ × 9ぎょう、うえが 0）
+       X … くろ　　 O … しろ　　 . … あいている ところ
+       x … ねらいの くろ（にがす・つなぐ いし）
+       o … ねらいの しろ（とる・あたりに する・きる いし）
+       * … せいかいの ばしょ（ひんとの「こたえ」に つかう）
+       + … 「め」に したい ばしょ　 # … 「め」に したい ばしょ で、せいかい でもある
+   ・multi:true の もんだいは なんかいか おいて とる もんだい（しろは じどうで にげます）
+   ・もんだいを ふやすときは、てーまの はいれつに 1つ たすだけで OK
+   ・てーまの なかは「やさしい → むずかしい」の じゅんに ならべます
    ================================================================= */
-const CAPTURE=[
-  { black:[[3,4],[5,4],[4,3]], white:[[4,4]], answer:[4,5],
-    hint:"しろの まわりで あいている ところは 1つだけです。そこに おきましょう！" },
-  { black:[[3,0],[5,0]], white:[[4,0]], answer:[4,1],
-    hint:"はしっこの いしは にげみちが すくないです。のこりの あきを ふさぎましょう。" },
-  { black:[[1,0]], white:[[0,0]], answer:[0,1],
-    hint:"かどの いしは、となりが 2つしか ありません。" },
-  { black:[[3,4],[6,4],[4,3],[5,3],[4,5]], white:[[4,4],[5,4]], answer:[5,5],
-    hint:"つながった しろい いし 2つの、のこりの あきを さがしましょう。" },
-  { black:[[2,0],[5,0],[3,1]], white:[[3,0],[4,0]], answer:[4,1],
-    hint:"はしの しろい いし 2つです。あいている ところは どこでしょう？" },
-  { black:[[1,0],[1,1]], white:[[0,0],[0,1]], answer:[0,2],
-    hint:"かどの しろい いしです。のこりの にげみちは 1つです。" },
-  { black:[[1,2],[5,2],[2,1],[3,1],[4,1],[2,3],[3,3]], white:[[2,2],[3,2],[4,2]], answer:[4,3],
-    hint:"3つ ならんだ しろい いしです。のこりの あきを よく みてください。" },
-  { black:[[5,6],[6,5],[7,6],[5,7],[8,7],[6,8]], white:[[6,6],[6,7],[7,7]], answer:[7,8],
-    hint:"まがった かたちの しろい いしです。あいている ところは 1つだけです。" },
-  { black:[[0,1],[1,0],[2,1],[5,3]], white:[[1,1],[6,3]], answer:[1,2],
-    hint:"しろい いしは 2つ あります。あきが 1つしか ない ほうを ねらいましょう。" },
-  { black:[[3,4],[3,5],[6,4],[6,5],[4,3],[5,3],[4,6]], white:[[4,4],[5,4],[4,5],[5,5]], answer:[5,6],
-    hint:"しかくい しろい いし 4つです。まわりで あいている ところは 1つだけです！" },
-];
-const BASES={
-  escape:[ // target＝にがす くろい いし
-    { black:[[4,4]], white:[[3,4],[5,4],[4,3]], target:[4,4], answer:[4,5],
-      hint:"あいている ほうへ 1つ のばすと、あきが ふえます。" },
-    { black:[[4,0]], white:[[3,0],[5,0]], target:[4,0], answer:[4,1],
-      hint:"はしっこから、ひろい ほうへ のばしましょう。" },
-    { black:[[2,4],[3,4]], white:[[1,4],[2,3],[3,3],[2,5],[3,5]], target:[3,4], answer:[4,4],
-      hint:"つながった くろ 2つの、のこりの あきに のばしましょう。" },
-    { black:[[4,4],[3,3],[5,3]], white:[[3,4],[5,4],[4,3]], target:[4,4], answer:[4,2],
-      hint:"あたりに なっている しろを とると、くろも たすかります。" },
+const BANK={
+  capture:[
+    { hint:"しろの まわりで あいている ところは 1つだけです。", b:[
+      ".........",".........",".........","....X....","...XoX...","....*....",".........",".........","........."]},
+    { hint:"つながった しろ 2つの、のこりの あきを さがしましょう。", b:[
+      "..XooX...","...X*....",".........",".........",".........",".........",".........",".........","........."]},
+    { hint:"かどの いしは にげみちが すくないです。", b:[
+      "oX.......","oX.......","*........",".........",".........",".........","......X..","......OX.","......X.."]},
+    { hint:"しろは 2つ あります。あきが 1つしか ない ほうを ねらいましょう。", b:[
+      ".........","..X......",".XoX.....","..*......",".........",".........","......X..",".....XO..","........."]},
+    { hint:"とれる しろが 2つ あります。おおきい ほうを とりましょう。", b:[
+      ".........",".........","......X..",".....XOX.",".........",".........",".........","..XX*....",".XoooX..."]},
+    { hint:"くろが あたりです。くろを かこんでいる しろの なかに、とれる いしが あります。", b:[
+      ".........",".........","....*....","...XoX...","...OXO...",".........",".........",".........","........."]},
+    { hint:"おけない ところに みえても、しろが とれる ときは おけます。", b:[
+      "*oX......","ooX......","XX.......",".........",".........",".........",".........",".........","........."]},
+    { hint:"とれる しろが 2つ あります。とると くろも たすかる ほうを えらびましょう。", b:[
+      ".........",".........","....*....","...XoX...","...OXO...",".........",".........","......X..",".....XO.."]},
+    { hint:"しろ 5つの あきは どこかな？ おけない ところに みえても とれます。", b:[
+      "..Xo*oX..","..XoooX..","...XXX...",".........",".........",".........","X........","OX.......","........."]},
+    { hint:"2かい いじょう おいて とります。はしの ほうへ おいこみましょう。", multi:true, b:[
+      ".........","...XoX...",".........",".........",".........",".........",".........",".........","........."]},
   ],
-  double:[ // target＝あたりに する しろい いし
-    { black:[[2,3],[3,2],[6,3],[5,2]], white:[[3,3],[5,3]], target:[[3,3],[5,3]], answer:[4,3],
-      hint:"しろ 2つの どちらにも となりあう ところを さがしましょう。" },
-    { black:[[5,3],[4,4],[2,4]], white:[[4,3],[3,4]], target:[[4,3],[3,4]], answer:[3,3],
-      hint:"ななめに ならんだ しろの あいだに わりこみましょう。" },
+  escape:[
+    { hint:"あいている ほうへ 1つ のばすと、あきが ふえます。", b:[
+      ".........",".........",".........","....O....","...OxO...","....*....",".........",".........","........."]},
+    { hint:"つながった くろ 2つの、のこりの あきに のばしましょう。", b:[
+      ".........",".........",".........","..OO.....",".Oxx*....","..OO.....",".........",".........","........."]},
+    { hint:"くろ 3つが あたりです。あいている ほうへ のばしましょう。", b:[
+      ".........",".........",".........","..OOO....",".Oxxx*...","..OOO....",".........",".........","........."]},
+    { hint:"なかまの くろの ほうへ にげると、いっしょに なって つよく なります。", b:[
+      ".........",".........",".........","..O.X....",".Ox*X....","..O.X....",".........",".........","........."]},
+    { hint:"まだ あたりでは ありませんが あぶないです。しろの すくない ほうへ のびましょう。", b:[
+      ".........",".........",".........","....O....","...Ox*...","...O.....","....O....",".........","........."]},
+    { hint:"あきが 2つしか ありません。なかまの ほうへ のびて あきを ふやしましょう。", b:[
+      ".........",".........",".........","...OO....","..OxxO...","..O.*X...","...X.....",".........","........."]},
+    { hint:"あたりの くろが 2つ あります。おおきい ほうを たすけましょう。", b:[
+      "......O..",".....OXO.",".........","..OO.....",".Oxx*....","..OO.....",".........",".........","........."]},
+    { hint:"のばしても あきが 2つしか ありません。あたりの しろを とって にげましょう。", b:[
+      ".........",".........","....*....","...XOX...","...OxO...",".........","....O....",".........","........."]},
+    { hint:"はしで のばすと また つかまります。とれる しろを さがしましょう。", b:[
+      ".........",".........","O........","OX.......","xOX......",".*.......",".........",".........","........."]},
+    { hint:"はしの くろ 2つが あたりです。のばすか、とるか、よく かんがえましょう。", b:[
+      "..OxxOX..","...O.*...",".........",".........",".........",".........",".........",".........","........."]},
   ],
-  shicho:[ // target＝つかまえる しろい いし（なんかいか おく。しろは じどうで にげる）
-    { black:[[3,4],[4,5],[6,5],[2,3]], white:[[4,4]], target:[4,4],
-      hint:"げた です。すぐに あたりに しないで、にげみちに あみを かけましょう。" },
-    { black:[[1,2],[2,1],[1,3]], white:[[2,2]], target:[2,2],
-      hint:"しろの にげみちを ふさぐように おいかけましょう。はしに おいこむと とれます。" },
-    { black:[[5,6],[6,7],[4,5]], white:[[6,6]], target:[6,6],
-      hint:"かどに むかって おいこみましょう。" },
+  double:[
+    { hint:"しろ 2つの どちらにも となりあう ところを さがしましょう。", b:[
+      ".........",".........","...X.X...","..Xo*oX..",".........",".........",".........",".........","........."]},
+    { hint:"ななめに ならんだ しろの あいだに わりこみましょう。", b:[
+      ".........",".........",".........","...*oX...","..XoX....",".........",".........",".........","........."]},
+    { hint:"ななめの しろの、あいている つなぎめに おきましょう。", b:[
+      "...X.....","..Xo.....","...*oX...","....X....",".........",".........",".........",".........","........."]},
+    { hint:"つながった しろ 2つと、しろ 1つを いっぺんに あたりに します。", b:[
+      ".........",".........","...X.X...","..Xo*oX..","..Xo.....","...X.....",".........",".........","........."]},
+    { hint:"はしの しろも ねらえます。どこに おくと 2つ いっぺんに あたりに なるかな？", b:[
+      "...oX....","..X*o....","....X....",".........",".........",".........",".........",".........","........."]},
+    { hint:"かどの しろ 2つです。2つの あいだに おいてみましょう。", b:[
+      ".oX......","o*.......","X........",".........",".........",".........",".........",".........","........."]},
+    { hint:"きって、りょうほうを あたりに しましょう。", b:[
+      ".........",".........",".........","...XoX...","...o*X...","...X.....",".........",".........","........."]},
+    { hint:"かどの ちかくです。しろ 2つの あきを かぞえてみましょう。", b:[
+      ".........",".........",".........",".........",".........",".........","......X..","....X*oX.","....Xo..X"]},
+    { hint:"りょうあたりに なる ところは 2つ ありますが、1つは おいた くろが すぐ とられます。", b:[
+      ".........",".........","...XO....","..Xo.....","...*oX...","....X....",".........",".........","........."]},
+    { hint:"おおきな しろと ちいさな しろを、いっぺんに ねらいましょう。", b:[
+      ".........",".........",".........","..XXX....",".XoooX...","..X.*oX..","...X.....",".........","........."]},
   ],
-  connect:[ // kind:"connect"＝くろを つなぐ / kind:"cut"＝しろを きる
-    { kind:"connect", black:[[3,4],[5,4]], white:[[4,3],[4,5]], target:[[3,4],[5,4]], answer:[4,4],
-      hint:"くろの いしと いしの あいだに おくと つながります。" },
-    { kind:"cut", black:[[4,3],[4,5]], white:[[3,4],[5,4]], target:[[3,4],[5,4]], answer:[4,4],
-      hint:"しろの いしと いしの あいだに わりこみましょう。" },
-    { kind:"connect", black:[[3,3],[4,4]], white:[[4,3]], target:[[3,3],[4,4]], answer:[3,4],
-      hint:"ななめの くろは、きられる まえに つなぎましょう。" },
-    { kind:"cut", black:[[4,3]], white:[[3,3],[4,4]], target:[[3,3],[4,4]], answer:[3,4],
-      hint:"ななめの しろの、もう ひとつの つなぎめに おきましょう。" },
+  shicho:[
+    { hint:"しちょう です。はしに むかって、あたりを つづけましょう。", multi:true, b:[
+      ".........",".........",".X.......",".........","Xo.......","XX.......",".........",".........","........."]},
+    { hint:"しちょう です。にげる さきを ふさぐように、あたりを つづけましょう。", multi:true, b:[
+      ".........",".........","......X..","......o..","......X.X",".........",".........",".........","........."]},
+    { hint:"かどに むかって おいこみましょう。", multi:true, b:[
+      ".........",".........",".........",".........",".........","......X..","......oX.","........X",".......X."]},
+    { hint:"どちらから あたりに するかが だいじです。くろの いしが ある ほうへ おいこみましょう。", multi:true, b:[
+      ".....X...",".........","...Xo....","..X.X....",".........",".........",".........",".........","........."]},
+    { hint:"しちょう です。とちゅうで くろの いしが まっています。", multi:true, b:[
+      ".........",".........",".........","......X..","...Xo....","....X....",".....X...",".........","........."]},
+    { hint:"くろは 2つだけ。あたりの むきを まちがえると にげられます。", multi:true, b:[
+      ".........",".........",".........",".........",".........",".........","..oX.....","..X......","........."]},
+    { hint:"くろは 2つだけ。はしの ほうへ おいこみましょう。", multi:true, b:[
+      ".........",".........",".........","..X......","..oX.....",".........",".........",".........","........."]},
+    { hint:"げた です。すぐに あたりに しないで、にげみちに あみを かけましょう。", multi:true, b:[
+      ".........",".........",".........",".XX......","Xo.......",".........",".........",".........","........."]},
+    { hint:"げた です。しろの にげる さきに さきまわり しましょう。", multi:true, b:[
+      ".........",".........",".........",".........","Xo.......","XX.......","..X......",".........","........."]},
+    { hint:"げた です。まんなかでも あみを かけると にげられません。", multi:true, b:[
+      ".........",".........",".........","..X......","...Xo....","....X.X..",".........",".........","........."]},
   ],
-  eyes:[ // space＝「め」を つくる あいている ところ
-    { black:[[0,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1]],
-      white:[[5,0],[5,1],[0,2],[1,2],[2,2],[3,2],[4,2]],
-      space:[[1,0],[2,0],[3,0]], answer:[2,0],
-      hint:"3つ ならんだ あきの まんなかに おくと「め」が 2つ できます。" },
-    { black:[[2,0],[2,1],[1,1],[1,2],[0,2]],
-      white:[[3,0],[3,1],[2,2],[1,3],[0,3]],
-      space:[[0,0],[1,0],[0,1]], answer:[0,0],
-      hint:"まがった 3つの あきの、まんなかに おきましょう。" },
-    { black:[[2,0],[6,0],[2,1],[3,1],[4,1],[5,1],[6,1]],
-      white:[[1,0],[1,1],[7,0],[7,1],[2,2],[3,2],[4,2],[5,2],[6,2]],
-      space:[[3,0],[4,0],[5,0]], answer:[4,0],
-      hint:"あいている 3つの まんなかが だいじな ところです。" },
+  connect:[
+    { kind:"connect", hint:"くろの いしと いしの あいだに おくと つながります。", b:[
+      ".........",".........",".........","....O....","...x*x...","....O....",".........",".........","........."]},
+    { kind:"cut", hint:"しろの いしと いしの あいだに わりこみましょう。", b:[
+      ".........",".........",".........","....X....","...o*o...","....X....",".........",".........","........."]},
+    { kind:"connect", hint:"はしでも おなじです。あいだに おいて つなぎましょう。", b:[
+      "...x*x...","....O....",".........",".........",".........",".........",".........",".........","........."]},
+    { kind:"cut", hint:"はしの しろも きれます。", b:[
+      "...o*o...","....X....",".........",".........",".........",".........",".........",".........","........."]},
+    { kind:"connect", hint:"ななめの くろは、きられる まえに つなぎましょう。", b:[
+      ".........",".........",".........","...xO....","...*x....",".........",".........",".........","........."]},
+    { kind:"cut", hint:"ななめの しろの、もう ひとつの つなぎめに おきましょう。", b:[
+      ".........",".........",".........","...oX....","...*o....",".........",".........",".........","........."]},
+    { kind:"cut", hint:"しろ 2つずつの あいだを きりましょう。", b:[
+      ".........",".........",".........","....X....","..oo*oo..","....X....",".........",".........","........."]},
+    { kind:"connect", hint:"きられそうな ところが 2つ あります。1つで りょうほう まもれる ところは どこかな？", b:[
+      ".........",".........",".........","...xO....","...*x....","...xO....",".........",".........","........."]},
+    { kind:"connect", hint:"きりに きた しろは あたりです。とって つなぎましょう。", b:[
+      ".........",".........",".........","xX.......","O*.......","xX.......",".........",".........","........."]},
+    { kind:"cut", hint:"うえの しろは「たけふし」で きれません。きれる ところを さがしましょう。", b:[
+      ".........",".........","...O.O...","...O.O...",".........","....X....","...o*o...","....X....","........."]},
+  ],
+  eyes:[
+    { hint:"3つ ならんだ あきの まんなかに おくと「め」が 2つ できます。", b:[
+      "X+#+X....","XXXXXO...","OOOOOO...",".........",".........",".........",".........",".........","........."]},
+    { hint:"かどの 3つの あきです。まんなかが だいじです。", b:[
+      "+#+X.....","XXXX.....","OOOOO....",".........",".........",".........",".........",".........","........."]},
+    { hint:"かどの まがった 3つの あきの、まんなかに おきましょう。", b:[
+      "#+X......","+XX......","XXO......","OO.......",".........",".........",".........",".........","........."]},
+    { hint:"はしの まんなかの 3つの あきです。だいじな ところは どこかな？", b:[
+      ".OX+#+XO.",".OXXXXXO.","..OOOOO..",".........",".........",".........",".........",".........","........."]},
+    { hint:"たての 3つの あきです。まんなかが だいじです。", b:[
+      ".........","XXO......","+XO......","#XO......","+XO......","XXO......","OO.......",".........","........."]},
+    { hint:"まがった 3つの あきです。かどに なる ところが だいじです。", b:[
+      ".OX+#XO..",".OXX+XO..","..OXXXO..","...OOO...",".........",".........",".........",".........","........."]},
+    { hint:"でっぱりの ある 4つの あきです。まんなかに おくと「め」が 3つに わかれます。", b:[
+      "X+#+X....","XX+XXO...","OXXXO....",".OOO.....",".........",".........",".........",".........","........."]},
+    { hint:"「め」は 1つ あります。もう 1つの「め」を ほんものに しましょう。", b:[
+      "X+X+X....","XXX#XO...","OOOOXO...","....OO...",".........",".........",".........",".........","........."]},
+    { hint:"5つの あきを 2つに わけましょう。どこで わけるかな？", b:[
+      ".........",".........",".........",".........",".........","OOOOOO...","XXXXXO...","X+#+XO...","X+X+XO..."]},
+    { hint:"みぎの かどの たての 3つの あきです。", b:[
+      "......OX+","......OX#","......OX+","......OXX",".......OO",".........",".........",".........","........."]},
   ],
 };
+// えを ざひょうに なおす
+function parseProblem(src,theme){
+  const p={theme,hint:src.hint,kind:src.kind,multi:!!src.multi,black:[],white:[],tB:[],tW:[],space:[],answer:null};
+  src.b.forEach((row,y)=>[...row].forEach((c,x)=>{
+    if(c==="X"||c==="x") p.black.push([x,y]);
+    if(c==="O"||c==="o") p.white.push([x,y]);
+    if(c==="x") p.tB.push([x,y]);
+    if(c==="o") p.tW.push([x,y]);
+    if(c==="*"||c==="#") p.answer=[x,y];
+    if(c==="+"||c==="#") p.space.push([x,y]);
+  }));
+  // ねらいの いし
+  if(theme==="escape") p.target=p.tB[0];
+  else if(p.multi) p.target=p.tW[0];
+  else if(theme==="connect") p.target=p.kind==="cut"?p.tW:p.tB;
+  else p.target=p.tW;
+  return p;
+}
 const THEMES=[
-  { key:"capture", name:"とる", icon:"🎯", desc:"あいての いしの あきを ぜんぶ ふさいで、とります。",
-    task:()=>"しろい いしを とりましょう" },
-  { key:"escape", name:"にげる", icon:"🏃", desc:"あたりに なった じぶんの いしを、あきが ふえる ほうへ にがします。",
+  { key:"capture", name:"とる", icon:"🎯", desc:"あいての いしの あきを ぜんぶ ふさいで とります。うしろの もんだいは、えらぶ・2かい おく もんだいです。",
+    task:p=>p.multi?"しろい いしを おいかけて とりましょう":"しろい いしを とりましょう" },
+  { key:"escape", name:"にげる", icon:"🏃", desc:"あたりに なった じぶんの いしを たすけます。のばす・とる・つながる、いろいろな にげかたが あります。",
     task:()=>"くろい いしを にがしましょう" },
   { key:"double", name:"りょうあたり", icon:"✌️", desc:"1かい おくだけで、しろ 2つを いっぺんに あたりに します。",
     task:()=>"りょうあたりに しましょう" },
@@ -492,76 +574,10 @@ const THEMES=[
   { key:"eyes", name:"「め」を つくる", icon:"🏠", desc:"「め」を 2つ つくって、くろを いきている いしに します。",
     task:()=>"「め」を 2つ つくりましょう" },
 ];
-// まわす・うらがえす
-const TRANS=[ (x,y)=>[x,y], (x,y)=>[8-y,x], (x,y)=>[8-x,8-y], (x,y)=>[y,8-x],
-              (x,y)=>[8-x,y], (x,y)=>[x,8-y], (x,y)=>[y,x], (x,y)=>[8-y,8-x] ];
-function transform(p,t){
-  const f=TRANS[t], pt=v=>f(v[0],v[1]), q=Object.assign({},p);
-  ["black","white","space"].forEach(k=>{ if(p[k]) q[k]=p[k].map(pt); });
-  if(p.answer) q.answer=pt(p.answer);
-  if(p.target) q.target=Array.isArray(p.target[0])?p.target.map(pt):pt(p.target);
-  return q;
-}
-function expand(bases,count=10){
-  const out=[], seen=new Set();
-  for(let t=0;t<8&&out.length<count;t++) for(const b of bases){
-    if(out.length>=count) break;
-    const q=transform(b,t);
-    const key=JSON.stringify([q.black.map(String).sort(),q.white.map(String).sort()]);
-    if(seen.has(key)) continue; seen.add(key); out.push(q);
-  }
-  return out;
-}
-const DRILL={ capture:CAPTURE.map(p=>Object.assign({},p)) };
-Object.keys(BASES).forEach(k=>DRILL[k]=expand(BASES[k]));
-THEMES.forEach(t=>DRILL[t.key].forEach((p,i)=>{ p.theme=t.key; p.id=t.key+"-"+i; }));
+const DRILL={};
+THEMES.forEach(t=>{ DRILL[t.key]=BANK[t.key].map((src,i)=>{ const p=parseProblem(src,t.key); p.id=t.key+"-v3-"+i; return p; }); });
 
 /* ---------- はんてい ---------- */
-function captureTargets(p){
-  const r=play(makeBoard(p,p.n||9),p.answer[0],p.answer[1],BLACK);
-  return r.ok?r.captured:[];
-}
-// 1かいで おわる もんだいの はんてい。{legal, ok, r, msg, dots}
-function judge(p,b,x,y){
-  const r=play(b,x,y,BLACK);
-  if(!r.ok) return {legal:false};
-  const nb=r.board, me=groupInfo(nb,x,y);
-  switch(p.theme){
-    case "capture":{
-      const t=p._t||(p._t=captureTargets(p)), cap=new Set(r.captured.map(([a,c])=>K(a,c)));
-      if(t.length&&t.every(([a,c])=>cap.has(K(a,c)))) return {legal:true,ok:true,r};
-      const dots=libsOfStones(nb,t);
-      return {legal:true,ok:false,r,dots,msg:`ざんねん！ しろの あきが まだ ${dots.length}つ あるね。`};
-    }
-    case "escape":{
-      const g=groupInfo(nb,...p.target), n=g.libs.size;
-      if(n>=3||(r.captured.length>0&&n>=2)) return {legal:true,ok:true,r};
-      return {legal:true,ok:false,r,dots:libsOfStones(nb,[p.target]),
-        msg:`ざんねん！ くろの あきが ${n}つしか ないね。あきが ふえる ほうへ にげましょう。`};
-    }
-    case "double":{
-      const at=groupsOf(nb,WHITE).filter(g=>g.libs.size===1).length;
-      if(at>=2&&me.libs.size>=2) return {legal:true,ok:true,r};
-      return {legal:true,ok:false,r,dots:libsOfStones(nb,groupsOf(nb,WHITE).map(g=>g.stones[0])),
-        msg: at>=2 ? "ざんねん！ くろが すぐに とられて しまうね。"
-                   : `ざんねん！ あたりに なった しろは ${at}つだね。2つ いっぺんに ねらいましょう。`};
-    }
-    case "connect":{
-      if(p.kind==="cut"){
-        if(!canConnect(nb,p.target)&&me.libs.size>=2) return {legal:true,ok:true,r};
-        return {legal:true,ok:false,r,dots:[],msg:"ざんねん！ しろは まだ つながる ことが できるね。"};
-      }
-      if(sameGroup(nb,p.target)&&groupInfo(nb,...p.target[0]).libs.size>=2) return {legal:true,ok:true,r};
-      return {legal:true,ok:false,r,dots:[],msg:"ざんねん！ くろは まだ きられて しまうね。"};
-    }
-    case "eyes":{
-      const open=p.space.filter(([a,c])=>nb[c][a]===EMPTY&&play(nb,a,c,WHITE).ok);
-      if(open.length===0) return {legal:true,ok:true,r};
-      return {legal:true,ok:false,r,dots:open,msg:"ざんねん！ あおい ● に しろが はいれるので、まだ「め」が 2つ ないね。"};
-    }
-  }
-  return {legal:true,ok:false,r,dots:[],msg:"ざんねん！"};
-}
 // しろが 1て で つながれるか
 function canConnect(b,stones){
   if(sameGroup(b,stones)) return true;
@@ -571,6 +587,102 @@ function canConnect(b,stones){
   }
   return false;
 }
+// くろが「きられない」か：しろが どこに おいても、くろは 1て で つなげられる
+function blackSafeConnected(b,stones){
+  if(sameGroup(b,stones)) return true;
+  for(let y=0;y<b.length;y++)for(let x=0;x<b.length;x++){
+    if(b[y][x]!==EMPTY) continue;
+    const w=play(b,x,y,WHITE); if(!w.ok) continue;
+    if(stones.some(([a,c])=>w.board[c][a]===EMPTY)) return false;   // とられた
+    let ok=sameGroup(w.board,stones);
+    for(let yy=0;yy<b.length&&!ok;yy++)for(let xx=0;xx<b.length&&!ok;xx++){
+      if(w.board[yy][xx]!==EMPTY) continue;
+      const r=play(w.board,xx,yy,BLACK);
+      if(r.ok&&sameGroup(r.board,stones)&&groupInfo(r.board,...stones[0]).libs.size>=2) ok=true;
+    }
+    if(!ok) return false;
+  }
+  return true;
+}
+// ほんものの「め」の かず：space の なかの あきの かたまりで かぞえる
+//  ・まわりが ぜんぶ くろの、1つ か 2つの あき＝「め」1つ
+//  ・1つの あきは、ななめが しろ／あき だと かけめ（はし・かどは 1つも だめ、まんなかは 2つで だめ）
+function countEyes(b,space){
+  const n=b.length, inS=new Set(space.map(([x,y])=>K(x,y))), seen=new Set();
+  const regions=[];
+  space.forEach(([x,y])=>{
+    if(b[y][x]!==EMPTY||seen.has(K(x,y))) return;
+    const cells=[], st=[[x,y]]; seen.add(K(x,y)); let closed=true;
+    while(st.length){
+      const [cx,cy]=st.pop(); cells.push([cx,cy]);
+      neighbors(b,cx,cy).forEach(([a,c])=>{
+        if(b[c][a]===BLACK) return;
+        if(b[c][a]===EMPTY&&inS.has(K(a,c))){ if(!seen.has(K(a,c))){ seen.add(K(a,c)); st.push([a,c]); } }
+        else closed=false;
+      });
+    }
+    if(closed) regions.push(cells);
+  });
+  const single=new Set(regions.filter(r=>r.length===1).map(r=>K(...r[0])));
+  let cnt=0;
+  regions.forEach(cells=>{
+    if(cells.length===2){ cnt++; return; }
+    if(cells.length!==1) return;
+    const [x,y]=cells[0];
+    const diag=[[x-1,y-1],[x+1,y-1],[x-1,y+1],[x+1,y+1]].filter(([a,c])=>a>=0&&c>=0&&a<n&&c<n);
+    const bad=diag.filter(([a,c])=>b[c][a]!==BLACK&&!single.has(K(a,c))).length;
+    if(diag.length<4?bad===0:bad<=1) cnt++;
+  });
+  return cnt;
+}
+// 1かいで おわる もんだいの はんてい。{legal, ok, r, msg, dots}
+function judge(p,b,x,y){
+  const r=play(b,x,y,BLACK);
+  if(!r.ok) return {legal:false};
+  const nb=r.board, me=groupInfo(nb,x,y);
+  switch(p.theme){
+    case "capture":{
+      const cap=new Set(r.captured.map(([a,c])=>K(a,c)));
+      if(p.target.every(([a,c])=>cap.has(K(a,c)))) return {legal:true,ok:true,r};
+      const dots=libsOfStones(nb,p.target);
+      if(r.captured.length) return {legal:true,ok:false,r,dots,msg:"とれたけど、もっと だいじな しろが あるね。もういちど さがしてみましょう。"};
+      return {legal:true,ok:false,r,dots,msg:`ざんねん！ ねらいの しろの あきが まだ ${dots.length}つ あるね。`};
+    }
+    case "escape":{
+      const g=groupInfo(nb,...p.target), n=g.libs.size;
+      if(n>=3||(r.captured.length>0&&n>=2)) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:libsOfStones(nb,[p.target]),
+        msg: n===2 ? "ざんねん！ あきが 2つでは、また あたりに されて つかまって しまうね。"
+                   : `ざんねん！ くろの あきが ${n}つしか ないね。`};
+    }
+    case "double":{
+      // この 1て で あたりに なった しろ（おいた ところの となり）
+      const near=new Set(neighbors(nb,x,y).map(([a,c])=>K(a,c)));
+      const at=groupsOf(nb,WHITE).filter(g=>g.libs.size===1&&g.stones.some(([a,c])=>near.has(K(a,c)))).length;
+      if(at>=2&&me.libs.size>=2) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:libsOfStones(nb,groupsOf(nb,WHITE).map(g=>g.stones[0])),
+        msg: at>=2 ? "ざんねん！ おいた くろが あたりに なって、すぐに とられて しまうね。"
+                   : `ざんねん！ あたりに なった しろは ${at}つだね。2つ いっぺんに ねらいましょう。`};
+    }
+    case "connect":{
+      if(p.kind==="cut"){
+        if(!canConnect(nb,p.target)&&me.libs.size>=2) return {legal:true,ok:true,r};
+        if(!canConnect(nb,p.target)) return {legal:true,ok:false,r,dots:[...me.libs].map(k=>k.split(",").map(Number)),
+          msg:"きれたけど、おいた くろの あきが 1つしか ないので すぐ とられて しまうね。"};
+        return {legal:true,ok:false,r,dots:[],msg:"ざんねん！ しろは まだ つながる ことが できるね。"};
+      }
+      if(blackSafeConnected(nb,p.target)) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:[],msg:"ざんねん！ くろは まだ きられて しまうね。"};
+    }
+    case "eyes":{
+      const n=countEyes(nb,p.space);
+      if(n>=2&&groupInfo(nb,x,y).libs.size>=1) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:[],msg:`ざんねん！ ほんものの「め」が ${n}つしか できないね。`};
+    }
+  }
+  return {legal:true,ok:false,r,dots:[],msg:"ざんねん！"};
+}
+
 /* ---------- しちょう・げた：しろの にげかた と、つかまえる てじゅんの よみ ----------
    しろは「のびる」か「あたりの くろを とる」で にげる。
    くろの ては、しろの どの にげかたにも とれる ときだけ「せいかい」とする。 */
@@ -690,13 +802,12 @@ function openProblem(key,i){
 }
 function markStones(){
   const p=P.p, b=P.board;
-  if(p.theme==="capture") return p._t||(p._t=captureTargets(p));
-  if(p.theme==="escape"||p.theme==="shicho") return b[p.target[1]][p.target[0]]===EMPTY?[]:groupInfo(b,...p.target).stones;
+  if(p.multi||p.theme==="escape") return b[p.target[1]][p.target[0]]===EMPTY?[]:groupInfo(b,...p.target).stones;
   if(p.theme==="eyes") return p.space;
   return p.target;
 }
 function answerPoint(){
-  if(P.p.theme==="shicho") return P.ans||(P.ans=bestShicho(P.board,P.p.target));
+  if(P.p.multi) return P.ans||(P.ans=bestShicho(P.board,P.p.target));
   return P.p.answer;
 }
 pBoard.extra=g=>{
@@ -712,7 +823,7 @@ pBoard.onPlace=(x,y)=>{
   if(P.done) return;
   P.wrong=null; P.dots=[];
   const p=P.p;
-  if(p.theme==="shicho") return placeShicho(x,y);
+  if(p.multi) return placeShicho(x,y);
   const j=judge(p,P.board,x,y);
   if(!j.legal){ P.wrong=[x,y]; P.dots=[]; SND.bad(); setMsgEl($("msg"),"bad","そこには おけません。ほかの ところを さがしましょう。"); return; }
   if(j.ok){ P.board=j.r.board; P.last=[x,y]; pBoard.b=P.board; return solved(); }
@@ -796,7 +907,7 @@ const RULES=[
       return "あおい ● の ところを ふさいでみましょう。";
     },
     quiz:{ type:"tap", q:"しろを とりましょう。ばんに おいて こたえてね。",
-      prob:{theme:"capture",n:5,black:[[1,2],[3,2],[2,1]],white:[[2,2]],answer:[2,3]},
+      prob:{theme:"capture",n:5,black:[[1,2],[3,2],[2,1]],white:[[2,2]],target:[[2,2]],answer:[2,3]},
       ok:"せいかい！ あきを ぜんぶ ふさいで とれました。" } },
 
   { title:"③ にげる", n:5, black:[[2,2]], white:[[1,2],[3,2],[2,1]], turn:BLACK, libs:BLACK,
