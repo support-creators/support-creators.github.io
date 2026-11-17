@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>いごドリル</title>
+<style>
+  :root{
+    --cream:#fbf5e4; --green:#2f6b3a; --green-d:#1f4d28; --ink:#3b2f22;
+    --red:#d93a2b; --card:#fffaf0; --blue:#1e7bd6; --orange:#e0892b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--cream);color:var(--ink);line-height:1.8;
+    word-break:keep-all;overflow-wrap:anywhere;
+    font-family:"Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","BIZ UDPGothic","Meiryo",sans-serif}
+  .app{max-width:480px;margin:0 auto;padding:16px 16px 32px}
+  .app.fit{padding:8px 14px 8px}
+  h1{font-size:44px;text-align:center;margin:6px 0 0;color:var(--green-d);letter-spacing:.08em;line-height:1.4}
+  h2{font-size:24px;margin:16px 0 8px;color:var(--green-d);line-height:1.4}
+  .sub{text-align:center;font-size:20px;margin:0 0 12px}
+  .btn{display:block;width:100%;border:none;border-radius:18px;background:var(--green);color:#fff;
+    font-size:22px;font-weight:bold;padding:12px 6px;font-family:inherit;cursor:pointer;line-height:1.4;
+    box-shadow:0 5px 0 var(--green-d);transition:transform .05s}
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--green-d)}
+  .btn:disabled{opacity:.35}
+  .btn.sub2{background:#fff;color:var(--green-d);border:3px solid var(--green);box-shadow:0 5px 0 #c9bf9f}
+  .btn.orange{background:var(--orange);box-shadow:0 5px 0 #a85f14}
+  .btn.big{font-size:26px;padding:14px 6px}
+  .btn small{display:block;font-size:16px;font-weight:normal;opacity:.95}
+  .row{display:flex;gap:10px;margin-top:8px}
+  .row .btn{flex:1}
+  .row.nav .btn{font-size:18px;padding:9px 4px;white-space:nowrap}
+  .stack>*+*{margin-top:12px}
+  /* top bar */
+  .top{display:flex;align-items:center;gap:8px;margin-bottom:0}
+  .top .back{width:auto;font-size:18px;padding:6px 12px;border-radius:14px;white-space:nowrap}
+  .top .ttl{flex:1;text-align:right;font-size:22px;font-weight:bold;line-height:1.3}
+  .spk{flex:none;width:46px;height:46px;border-radius:50%;border:3px solid var(--green);background:#fff;font-size:22px;
+    line-height:1;padding:0;cursor:pointer;box-shadow:0 3px 0 #c9bf9f}
+  .nospeech .spk{display:none}
+  /* home */
+  .themes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .tcard{position:relative;text-align:left;padding:10px 12px}
+  .tcard .ic{font-size:24px;display:block;line-height:1.3}
+  .tcard .nm{font-size:20px;display:block;white-space:nowrap}
+  .tcard .ct{font-size:16px;font-weight:normal;display:block}
+  .mini{height:12px;background:rgba(255,255,255,.35);border-radius:6px;overflow:hidden;margin-top:4px}
+  .mini>div{height:100%;background:#ffe27a;border-radius:6px}
+  .reset{margin-top:22px;font-size:18px;padding:10px}
+  /* theme list */
+  .desc{background:var(--card);border-radius:16px;padding:10px 14px;font-size:20px;line-height:1.7;margin:8px 0 12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .plist{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .pbtn{position:relative;font-size:24px;padding:14px 0}
+  .pbtn .mk{position:absolute;top:-4px;right:-2px;font-size:18px}
+  .pbtn.s2{background:#4f9a5a}
+  .pbtn.s1{background:#6b8fb8}
+  .legend{font-size:17px;text-align:center;margin-top:10px;color:#6c5d48}
+  /* boards */
+  .boardsvg{width:100%;height:auto;display:block;margin:0 auto;touch-action:manipulation;user-select:none;
+    border-radius:12px;box-shadow:0 6px 14px rgba(80,50,10,.35)}
+  .task{font-size:22px;font-weight:bold;text-align:center;margin:0 0 6px;color:var(--green-d);line-height:1.5}
+  .msg{height:96px;margin:8px 0 0;font-size:19px;font-weight:bold;text-align:center;line-height:1.55;
+    display:flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:16px;overflow:hidden}
+  .msg.info{background:#fff3cf}
+  .msg.good{background:#dff3dc;color:var(--green-d);font-size:24px}
+  .msg.bad{background:#fde3df;color:var(--red)}
+  .msg.hint{background:#fff3cf}
+  /* rules */
+  .dots{display:flex;justify-content:center;gap:6px;margin:2px 0}
+  .dots span{width:14px;height:14px;border-radius:50%;background:#e1d6b6;border:2px solid transparent}
+  .dots span.done{background:var(--green)}
+  .dots span.cur{border-color:var(--orange)}
+  .rtitle{font-size:24px;font-weight:bold;text-align:center;color:var(--green-d);margin:0 0 6px;line-height:1.4}
+  .rtext{background:var(--card);border-radius:16px;padding:6px 14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .rtext p{font-size:19px;line-height:1.6;margin:3px 0}
+  .rtext b{color:#c4561a}
+  #rules .msg{height:84px;font-size:18px;line-height:1.5}
+  #rules .msg.good{font-size:19px}
+  .choices{display:flex;gap:10px;margin-top:8px}
+  .choices .btn{flex:1;font-size:20px;padding:10px 4px;background:var(--orange);box-shadow:0 5px 0 #a85f14}
+  .hidden{display:none!important}
+  /* celebration */
+  #fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9}
+  #fx span{position:absolute;font-size:34px;animation:fly 1.3s ease-out forwards}
+  @keyframes fly{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(30deg);opacity:0}}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .35s ease-out}
+  @keyframes blink{50%{opacity:.25}}
+  .blink{animation:blink 1s infinite}
+</style>
+</head>
+<body>
+<div id="fx"></div>
+<div class="app">
+
+  <!-- ===== トップ ===== -->
+  <section id="home">
+    <h1>いごドリル</h1>
+    <p class="sub">いごを たのしく おぼえましょう！</p>
+    <div class="stack">
+      <button class="btn orange big" id="rulesBtn">📖 るーるの せつめい<small id="rulesProg">0 / 11</small></button>
+    </div>
+    <h2>🧩 どりる</h2>
+    <div class="themes" id="themes"></div>
+    <button class="btn sub2 reset" id="resetBtn">きろくを けす</button>
+  </section>
+
+  <!-- ===== テーマの もんだい いちらん ===== -->
+  <section id="list" class="hidden">
+    <div class="top">
+      <button class="btn sub2 back" id="lBack">◀ もどる</button>
+      <div class="ttl" id="lTitle"></div>
+    </div>
+    <div class="desc" id="lDesc"></div>
+    <div class="plist" id="plist"></div>
+    <p class="legend">⭐ じぶんで できた　💡 こたえを みて できた</p>
+  </section>
+
+  <!-- ===== ルールの せつめい ===== -->
+  <section id="rules" class="hidden">
+    <div class="top">
+      <button class="btn sub2 back" id="rBack">◀ もどる</button>
+      <div class="ttl" id="rNo">1 / 11</div>
+      <button class="spk" id="rSpk" aria-label="よみあげ">🔊</button>
+    </div>
+    <div class="dots" id="rDots"></div>
+    <div class="rtitle" id="rTitle"></div>
+    <div class="rtext" id="rText"></div>
+    <svg id="rBoard" class="boardsvg" viewBox="0 0 400 400" aria-label="ちいさい ばん"></svg>
+    <div class="choices hidden" id="rChoices"></div>
+    <div class="msg info" id="rMsg"></div>
+    <div class="row nav">
+      <button class="btn sub2" id="rPrev">◀ まえへ</button>
+      <button class="btn sub2" id="rReset">もういちど</button>
+      <button class="btn" id="rNext">たしかめ ▶</button>
+    </div>
+  </section>
+
+  <!-- ===== もんだい ===== -->
+  <section id="play" class="hidden">
+    <div class="top">
+      <button class="btn sub2 back" id="pBack">◀ いちらん</button>
+      <div class="ttl" id="pTitle"></div>
+      <button class="spk" id="pSpk" aria-label="よみあげ">🔊</button>
+    </div>
+    <div class="task" id="pTask"></div>
+    <svg id="board" class="boardsvg" viewBox="0 0 400 400" aria-label="ばん"></svg>
+    <div class="msg info" id="msg"></div>
+    <div class="row" id="hintRow">
+      <button class="btn" id="hintBtn">ひんと</button>
+      <button class="btn sub2" id="retryBtn">やりなおす</button>
+    </div>
+    <div class="row hidden" id="doneRow">
+      <button class="btn orange big" id="bigNext">つぎの もんだいへ ▶</button>
+    </div>
+    <div class="row nav">
+      <button class="btn sub2" id="prevBtn">◀ まえへ</button>
+      <button class="btn sub2" id="nextBtn">つぎへ ▶</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =================================================================
+   1. いごの るーる（どの おおきさの ばんでも つかえる）
+   ================================================================= */
+const EMPTY=0, BLACK=1, WHITE=2;
+const K=(x,y)=>x+","+y;
+const cname=c=>c===BLACK?"くろ":"しろ";
+
+function makeBoard(p,n=9){
+  const b=Array.from({length:n},()=>Array(n).fill(EMPTY));
+  (p.black||[]).forEach(([x,y])=>b[y][x]=BLACK);
+  (p.white||[]).forEach(([x,y])=>b[y][x]=WHITE);
+  return b;
+}
+function neighbors(b,x,y){
+  const n=b.length;
+  return [[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([a,c])=>a>=0&&a<n&&c>=0&&c<n);
+}
+// つながった石のかたまりと、その呼吸点（あき）
+function groupInfo(b,x,y){
+  const color=b[y][x], stones=[], libs=new Set(), seen=new Set([K(x,y)]), st=[[x,y]];
+  while(st.length){
+    const [cx,cy]=st.pop(); stones.push([cx,cy]);
+    for(const [nx,ny] of neighbors(b,cx,cy)){
+      const k=K(nx,ny);
+      if(b[ny][nx]===EMPTY) libs.add(k);
+      else if(b[ny][nx]===color&&!seen.has(k)){ seen.add(k); st.push([nx,ny]); }
+    }
+  }
+  return {color, stones, libs};
+}
+function groupsOf(b,color){
+  const seen=new Set(), res=[];
+  for(let y=0;y<b.length;y++)for(let x=0;x<b.length;x++){
+    if(b[y][x]!==color||seen.has(K(x,y))) continue;
+    const g=groupInfo(b,x,y); g.stones.forEach(([a,c])=>seen.add(K(a,c))); res.push(g);
+  }
+  return res;
+}
+// 着手。ko＝コウで打てない点。返り値 {ok, board, captured, ko, reason}
+function play(b,x,y,color,ko=null){
+  if(b[y][x]!==EMPTY) return {ok:false,reason:"occupied"};
+  if(ko&&ko[0]===x&&ko[1]===y) return {ok:false,reason:"ko"};
+  const nb=b.map(r=>r.slice()); nb[y][x]=color;
+  const opp=color===BLACK?WHITE:BLACK, captured=[], done=new Set();
+  for(const [nx,ny] of neighbors(nb,x,y)){
+    if(nb[ny][nx]===opp&&!done.has(K(nx,ny))){
+      const g=groupInfo(nb,nx,ny);
+      g.stones.forEach(([a,c])=>done.add(K(a,c)));
+      if(g.libs.size===0) captured.push(...g.stones);
+    }
+  }
+  captured.forEach(([a,c])=>nb[c][a]=EMPTY);
+  const me=groupInfo(nb,x,y);
+  if(captured.length===0&&me.libs.size===0) return {ok:false,reason:"suicide"};
+  const newKo=(captured.length===1&&me.stones.length===1&&me.libs.size===1)?captured[0]:null;
+  return {ok:true,board:nb,captured,ko:newKo};
+}
+// いくつかの石の あき（まとめて）
+function libsOfStones(b,stones){
+  const set=new Set();
+  stones.forEach(([x,y])=>{ if(b[y][x]!==EMPTY) groupInfo(b,x,y).libs.forEach(k=>set.add(k)); });
+  return [...set].map(k=>k.split(",").map(Number));
+}
+function sameGroup(b,stones){
+  const [x0,y0]=stones[0]; if(b[y0][x0]===EMPTY) return false;
+  const g=new Set(groupInfo(b,x0,y0).stones.map(([a,c])=>K(a,c)));
+  return stones.every(([a,c])=>g.has(K(a,c)));
+}
+// 地（片方の色だけに囲まれた空点）
+function territory(b){
+  const n=b.length, seen=new Set(), res={black:[],white:[]};
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    if(b[y][x]!==EMPTY||seen.has(K(x,y))) continue;
+    const cells=[], border=new Set(), st=[[x,y]]; seen.add(K(x,y));
+    while(st.length){
+      const [cx,cy]=st.pop(); cells.push([cx,cy]);
+      for(const [nx,ny] of neighbors(b,cx,cy)){
+        const v=b[ny][nx];
+        if(v===EMPTY){ if(!seen.has(K(nx,ny))){ seen.add(K(nx,ny)); st.push([nx,ny]); } }
+        else border.add(v);
+      }
+    }
+    if(border.size===1) (border.has(BLACK)?res.black:res.white).push(...cells);
+  }
+  return res;
+}
+
+/* =================================================================
+   2. ばんの えがき と、おして おく ばん
+   ================================================================= */
+function geo(n){
+  const PAD=n===9?28:n===7?38:46, STEP=(400-PAD*2)/(n-1);
+  return {n,STEP,R:STEP*0.46,p:v=>PAD+v*STEP};
+}
+const OV={
+  ring:(g,x,y,col="#e8322a",w=4)=>`<circle cx="${g.p(x)}" cy="${g.p(y)}" r="${g.R+3}" fill="none" stroke="${col}" stroke-width="${w}"/>`,
+  blinkRing:(g,x,y)=>`<g class="blink"><circle cx="${g.p(x)}" cy="${g.p(y)}" r="${g.R*0.9}" fill="#1e7bd6" fill-opacity=".18"/><circle cx="${g.p(x)}" cy="${g.p(y)}" r="${g.R+3}" fill="none" stroke="#1e7bd6" stroke-width="5"/></g>`,
+  dot:(g,x,y)=>`<circle cx="${g.p(x)}" cy="${g.p(y)}" r="${Math.max(5,g.R*0.28)}" fill="#1e7bd6"/>`,
+  last:(g,x,y)=>`<circle cx="${g.p(x)}" cy="${g.p(y)}" r="${g.R*0.3}" fill="none" stroke="#e8322a" stroke-width="3"/>`,
+  cross:(g,x,y)=>{ const d=g.R*0.75,cx=g.p(x),cy=g.p(y);
+    return `<g stroke="#e8322a" stroke-width="7" stroke-linecap="round"><line x1="${cx-d}" y1="${cy-d}" x2="${cx+d}" y2="${cy+d}"/><line x1="${cx+d}" y1="${cy-d}" x2="${cx-d}" y2="${cy+d}"/></g>`; },
+  terr:(g,x,y,c)=>{ const s=g.R*0.7;
+    return `<rect x="${g.p(x)-s/2}" y="${g.p(y)-s/2}" width="${s}" height="${s}" rx="4" fill="${c===BLACK?"#222":"#fff"}" stroke="#555" stroke-width="1.5"/>`; },
+  label:(g,x,y,t)=>`<text x="${g.p(x)}" y="${g.p(y)+g.R*0.4}" text-anchor="middle" font-size="${g.R*1.15}" font-weight="bold" fill="#c4561a">${t}</text>`,
+};
+function boardSVG(b,idp,extra){
+  const n=b.length,g=geo(n),p=g.p,s=[];
+  s.push(`<defs>
+    <linearGradient id="${idp}wood" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0c97a"/><stop offset=".5" stop-color="#e2b062"/><stop offset="1" stop-color="#d49a4c"/>
+    </linearGradient>
+    <pattern id="${idp}grain" width="400" height="24" patternUnits="userSpaceOnUse">
+      <path d="M0 6 Q100 2 200 7 T400 5" stroke="#b5823d" stroke-opacity=".25" fill="none" stroke-width="2"/>
+      <path d="M0 17 Q120 21 220 15 T400 18" stroke="#b5823d" stroke-opacity=".18" fill="none" stroke-width="1.5"/>
+    </pattern>
+    <radialGradient id="${idp}bk" cx=".35" cy=".3" r=".7"><stop offset="0" stop-color="#666"/><stop offset="1" stop-color="#111"/></radialGradient>
+    <radialGradient id="${idp}wt" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfcac0"/></radialGradient>
+  </defs>`);
+  s.push(`<rect width="400" height="400" fill="url(#${idp}wood)"/><rect width="400" height="400" fill="url(#${idp}grain)"/>`);
+  for(let i=0;i<n;i++){
+    const w=i===0||i===n-1?2.6:1.4;
+    s.push(`<line x1="${p(0)}" y1="${p(i)}" x2="${p(n-1)}" y2="${p(i)}" stroke="#4a3418" stroke-width="${w}"/>`);
+    s.push(`<line x1="${p(i)}" y1="${p(0)}" x2="${p(i)}" y2="${p(n-1)}" stroke="#4a3418" stroke-width="${w}"/>`);
+  }
+  if(n===9) [[2,2],[6,2],[4,4],[2,6],[6,6]].forEach(([x,y])=>s.push(`<circle cx="${p(x)}" cy="${p(y)}" r="4" fill="#4a3418"/>`));
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const c=b[y][x]; if(c===EMPTY) continue;
+    s.push(`<circle cx="${p(x)+1.5}" cy="${p(y)+2.5}" r="${g.R}" fill="rgba(0,0,0,.28)"/>`);
+    s.push(`<circle cx="${p(x)}" cy="${p(y)}" r="${g.R}" fill="url(#${idp}${c===BLACK?"bk":"wt"})" ${c===WHITE?'stroke="#8d877c" stroke-width="1"':''}/>`);
+  }
+  if(extra) s.push(...extra(g));
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)
+    s.push(`<rect x="${p(x)-g.STEP/2}" y="${p(y)-g.STEP/2}" width="${g.STEP}" height="${g.STEP}" fill="transparent" data-x="${x}" data-y="${y}"/>`);
+  return s.join("");
+}
+// どの ばんも おなじ そうさ：おした ところに すぐ いしを おく
+class GoBoard{
+  constructor(svg,idp){
+    this.svg=svg; this.idp=idp; this.b=makeBoard({},5); this.enabled=true;
+    this.color=BLACK; this.extra=()=>[]; this.onPlace=null; this.onTapAny=null;
+    svg.addEventListener("click",e=>this.tap(e));
+  }
+  set(b){ this.b=b; this.draw(); }
+  tap(e){
+    const t=e.target.closest("rect[data-x]"); if(!t||!this.enabled) return;
+    const x=+t.dataset.x, y=+t.dataset.y;
+    if(this.onTapAny){ this.onTapAny(x,y); return; }
+    if(!this.onPlace||this.b[y][x]!==EMPTY) return;
+    this.onPlace(x,y); this.draw();   // 1かい おすと すぐに おく
+  }
+  draw(){
+    this.svg.innerHTML=boardSVG(this.b,this.idp,g=>{
+      const o=this.extra(g)||[];
+      return o;
+    });
+  }
+}
+
+/* =================================================================
+   3. おと・よみあげ・おいわい・きろく
+   ================================================================= */
+let AC=null;
+function tone(freqs,dur,type="sine",vol=0.22){
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o=AC.createOscillator(), gn=AC.createGain(), t=AC.currentTime+i*dur;
+      o.type=type; o.frequency.value=f;
+      gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(vol,t+0.02);
+      gn.gain.exponentialRampToValueAtTime(0.0001,t+dur*1.6);
+      o.connect(gn).connect(AC.destination); o.start(t); o.stop(t+dur*1.8);
+    });
+  }catch(e){}
+}
+const SND={ good:()=>tone([523,659,784,1047],0.11), bad:()=>tone([262,196],0.16,"triangle",0.18), put:()=>tone([660],0.04,"sine",0.12) };
+const HAS_SPEECH=("speechSynthesis" in window)&&("SpeechSynthesisUtterance" in window);
+if(!HAS_SPEECH) document.documentElement.classList.add("nospeech");
+function speak(text){
+  try{
+    const s=window.speechSynthesis; s.cancel();
+    const u=new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g,"").replace(/[◯●▶◀🎉💡⭐🔊✏️]/g," "));
+    u.lang="ja-JP"; u.rate=0.9; s.speak(u);
+  }catch(e){}
+}
+function celebrate(){
+  const fx=document.getElementById("fx"), em=["⭐","🎉","✨","🌟","🎊"];
+  for(let i=0;i<14;i++){
+    const s=document.createElement("span");
+    s.textContent=em[i%em.length];
+    s.style.left=(35+Math.random()*30)+"%"; s.style.top=(40+Math.random()*15)+"%";
+    s.style.setProperty("--dx",(Math.random()*260-130)+"px");
+    s.style.setProperty("--dy",(-120-Math.random()*220)+"px");
+    fx.appendChild(s); setTimeout(()=>s.remove(),1400);
+  }
+}
+let REC={drill:{},rules:[]};
+function loadRec(){
+  try{
+    const r=JSON.parse(localStorage.getItem("igodrill-v2")||"null");
+    if(r) REC=Object.assign(REC,r);
+    else{ // まえの きろくを ひきつぐ
+      JSON.parse(localStorage.getItem("igodrill-solved")||"[]").forEach(i=>REC.drill["capture-"+i]=2);
+    }
+  }catch(e){}
+}
+function saveRec(){ try{ localStorage.setItem("igodrill-v2",JSON.stringify(REC)); }catch(e){} }
+
+const $=id=>document.getElementById(id);
+function setMsgEl(el,kind,text){
+  el.className="msg "+kind; el.textContent=text;
+  if(kind==="good"){ el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
+}
+let CUR="home";
+function show(id){
+  ["home","list","rules","play"].forEach(s=>$(s).classList.toggle("hidden",s!==id));
+  document.querySelector(".app").classList.toggle("fit",["rules","play"].includes(id));
+  CUR=id; window.scrollTo(0,0); fitCurrent();
+  try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(e){}
+}
+// ばんの おおきさを、がめんに スクロール なしで おさまるように きめる
+function fitBoard(svg){
+  const app=document.querySelector(".app");
+  svg.style.width="0px";
+  const others=app.getBoundingClientRect().height;
+  const avail=window.innerHeight-others-6;
+  const max=app.clientWidth-28;
+  svg.style.width=Math.max(150,Math.min(max,avail))+"px";
+}
+function fitCurrent(){
+  if(CUR==="play") fitBoard($("board"));
+  if(CUR==="rules") fitBoard($("rBoard"));
+}
+window.addEventListener("resize",fitCurrent);
+
+/* =================================================================
+   4. どりるの もんだい
+   ・ざひょうは [よこ, たて]。ひだりうえが [0,0]（9ろばん）
+   ・とる：まえからの 10もん（そのまま）
+   ・ほかの てーまは「もとの かたち」を かいておくと、
+     まわしたり うらがえしたり した もんだいを じどうで つくって 10もんに します
+   ・もんだいを ふやすときは、BASES の はいれつに 1つ たすだけで OK
+   ・hint は むきの ことば（うえ・した など）を つかわずに かく
+     （まわした もんだいでも おかしく ならないように）
+   ================================================================= */
+const CAPTURE=[
+  { black:[[3,4],[5,4],[4,3]], white:[[4,4]], answer:[4,5],
+    hint:"しろの まわりで あいている ところは 1つだけです。そこに おきましょう！" },
+  { black:[[3,0],[5,0]], white:[[4,0]], answer:[4,1],
+    hint:"はしっこの いしは にげみちが すくないです。のこりの あきを ふさぎましょう。" },
+  { black:[[1,0]], white:[[0,0]], answer:[0,1],
+    hint:"かどの いしは、となりが 2つしか ありません。" },
+  { black:[[3,4],[6,4],[4,3],[5,3],[4,5]], white:[[4,4],[5,4]], answer:[5,5],
+    hint:"つながった しろい いし 2つの、のこりの あきを さがしましょう。" },
+  { black:[[2,0],[5,0],[3,1]], white:[[3,0],[4,0]], answer:[4,1],
+    hint:"はしの しろい いし 2つです。あいている ところは どこでしょう？" },
+  { black:[[1,0],[1,1]], white:[[0,0],[0,1]], answer:[0,2],
+    hint:"かどの しろい いしです。のこりの にげみちは 1つです。" },
+  { black:[[1,2],[5,2],[2,1],[3,1],[4,1],[2,3],[3,3]], white:[[2,2],[3,2],[4,2]], answer:[4,3],
+    hint:"3つ ならんだ しろい いしです。のこりの あきを よく みてください。" },
+  { black:[[5,6],[6,5],[7,6],[5,7],[8,7],[6,8]], white:[[6,6],[6,7],[7,7]], answer:[7,8],
+    hint:"まがった かたちの しろい いしです。あいている ところは 1つだけです。" },
+  { black:[[0,1],[1,0],[2,1],[5,3]], white:[[1,1],[6,3]], answer:[1,2],
+    hint:"しろい いしは 2つ あります。あきが 1つしか ない ほうを ねらいましょう。" },
+  { black:[[3,4],[3,5],[6,4],[6,5],[4,3],[5,3],[4,6]], white:[[4,4],[5,4],[4,5],[5,5]], answer:[5,6],
+    hint:"しかくい しろい いし 4つです。まわりで あいている ところは 1つだけです！" },
+];
+const BASES={
+  escape:[ // target＝にがす くろい いし
+    { black:[[4,4]], white:[[3,4],[5,4],[4,3]], target:[4,4], answer:[4,5],
+      hint:"あいている ほうへ 1つ のばすと、あきが ふえます。" },
+    { black:[[4,0]], white:[[3,0],[5,0]], target:[4,0], answer:[4,1],
+      hint:"はしっこから、ひろい ほうへ のばしましょう。" },
+    { black:[[2,4],[3,4]], white:[[1,4],[2,3],[3,3],[2,5],[3,5]], target:[3,4], answer:[4,4],
+      hint:"つながった くろ 2つの、のこりの あきに のばしましょう。" },
+    { black:[[4,4],[3,3],[5,3]], white:[[3,4],[5,4],[4,3]], target:[4,4], answer:[4,2],
+      hint:"あたりに なっている しろを とると、くろも たすかります。" },
+  ],
+  double:[ // target＝あたりに する しろい いし
+    { black:[[2,3],[3,2],[6,3],[5,2]], white:[[3,3],[5,3]], target:[[3,3],[5,3]], answer:[4,3],
+      hint:"しろ 2つの どちらにも となりあう ところを さがしましょう。" },
+    { black:[[5,3],[4,4],[2,4]], white:[[4,3],[3,4]], target:[[4,3],[3,4]], answer:[3,3],
+      hint:"ななめに ならんだ しろの あいだに わりこみましょう。" },
+  ],
+  shicho:[ // target＝つかまえる しろい いし（なんかいか おく。しろは じどうで にげる）
+    { black:[[3,4],[4,5],[6,5],[2,3]], white:[[4,4]], target:[4,4],
+      hint:"げた です。すぐに あたりに しないで、にげみちに あみを かけましょう。" },
+    { black:[[1,2],[2,1],[1,3]], white:[[2,2]], target:[2,2],
+      hint:"しろの にげみちを ふさぐように おいかけましょう。はしに おいこむと とれます。" },
+    { black:[[5,6],[6,7],[4,5]], white:[[6,6]], target:[6,6],
+      hint:"かどに むかって おいこみましょう。" },
+  ],
+  connect:[ // kind:"connect"＝くろを つなぐ / kind:"cut"＝しろを きる
+    { kind:"connect", black:[[3,4],[5,4]], white:[[4,3],[4,5]], target:[[3,4],[5,4]], answer:[4,4],
+      hint:"くろの いしと いしの あいだに おくと つながります。" },
+    { kind:"cut", black:[[4,3],[4,5]], white:[[3,4],[5,4]], target:[[3,4],[5,4]], answer:[4,4],
+      hint:"しろの いしと いしの あいだに わりこみましょう。" },
+    { kind:"connect", black:[[3,3],[4,4]], white:[[4,3]], target:[[3,3],[4,4]], answer:[3,4],
+      hint:"ななめの くろは、きられる まえに つなぎましょう。" },
+    { kind:"cut", black:[[4,3]], white:[[3,3],[4,4]], target:[[3,3],[4,4]], answer:[3,4],
+      hint:"ななめの しろの、もう ひとつの つなぎめに おきましょう。" },
+  ],
+  eyes:[ // space＝「め」を つくる あいている ところ
+    { black:[[0,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1]],
+      white:[[5,0],[5,1],[0,2],[1,2],[2,2],[3,2],[4,2]],
+      space:[[1,0],[2,0],[3,0]], answer:[2,0],
+      hint:"3つ ならんだ あきの まんなかに おくと「め」が 2つ できます。" },
+    { black:[[2,0],[2,1],[1,1],[1,2],[0,2]],
+      white:[[3,0],[3,1],[2,2],[1,3],[0,3]],
+      space:[[0,0],[1,0],[0,1]], answer:[0,0],
+      hint:"まがった 3つの あきの、まんなかに おきましょう。" },
+    { black:[[2,0],[6,0],[2,1],[3,1],[4,1],[5,1],[6,1]],
+      white:[[1,0],[1,1],[7,0],[7,1],[2,2],[3,2],[4,2],[5,2],[6,2]],
+      space:[[3,0],[4,0],[5,0]], answer:[4,0],
+      hint:"あいている 3つの まんなかが だいじな ところです。" },
+  ],
+};
+const THEMES=[
+  { key:"capture", name:"とる", icon:"🎯", desc:"あいての いしの あきを ぜんぶ ふさいで、とります。",
+    task:()=>"しろい いしを とりましょう" },
+  { key:"escape", name:"にげる", icon:"🏃", desc:"あたりに なった じぶんの いしを、あきが ふえる ほうへ にがします。",
+    task:()=>"くろい いしを にがしましょう" },
+  { key:"double", name:"りょうあたり", icon:"✌️", desc:"1かい おくだけで、しろ 2つを いっぺんに あたりに します。",
+    task:()=>"りょうあたりに しましょう" },
+  { key:"shicho", name:"しちょう・げた", icon:"🕸️", desc:"なんかいか おいて、にげる いしを つかまえます。しろは じどうで にげます。",
+    task:()=>"しろを おいかけて とりましょう" },
+  { key:"connect", name:"つなぐ・きる", icon:"🔗", desc:"じぶんの いしを つないだり、あいての いしを きったり します。",
+    task:p=>p.kind==="cut"?"しろい いしを きりましょう":"くろい いしを つなぎましょう" },
+  { key:"eyes", name:"「め」を つくる", icon:"🏠", desc:"「め」を 2つ つくって、くろを いきている いしに します。",
+    task:()=>"「め」を 2つ つくりましょう" },
+];
+// まわす・うらがえす
+const TRANS=[ (x,y)=>[x,y], (x,y)=>[8-y,x], (x,y)=>[8-x,8-y], (x,y)=>[y,8-x],
+              (x,y)=>[8-x,y], (x,y)=>[x,8-y], (x,y)=>[y,x], (x,y)=>[8-y,8-x] ];
+function transform(p,t){
+  const f=TRANS[t], pt=v=>f(v[0],v[1]), q=Object.assign({},p);
+  ["black","white","space"].forEach(k=>{ if(p[k]) q[k]=p[k].map(pt); });
+  if(p.answer) q.answer=pt(p.answer);
+  if(p.target) q.target=Array.isArray(p.target[0])?p.target.map(pt):pt(p.target);
+  return q;
+}
+function expand(bases,count=10){
+  const out=[], seen=new Set();
+  for(let t=0;t<8&&out.length<count;t++) for(const b of bases){
+    if(out.length>=count) break;
+    const q=transform(b,t);
+    const key=JSON.stringify([q.black.map(String).sort(),q.white.map(String).sort()]);
+    if(seen.has(key)) continue; seen.add(key); out.push(q);
+  }
+  return out;
+}
+const DRILL={ capture:CAPTURE.map(p=>Object.assign({},p)) };
+Object.keys(BASES).forEach(k=>DRILL[k]=expand(BASES[k]));
+THEMES.forEach(t=>DRILL[t.key].forEach((p,i)=>{ p.theme=t.key; p.id=t.key+"-"+i; }));
+
+/* ---------- はんてい ---------- */
+function captureTargets(p){
+  const r=play(makeBoard(p,p.n||9),p.answer[0],p.answer[1],BLACK);
+  return r.ok?r.captured:[];
+}
+// 1かいで おわる もんだいの はんてい。{legal, ok, r, msg, dots}
+function judge(p,b,x,y){
+  const r=play(b,x,y,BLACK);
+  if(!r.ok) return {legal:false};
+  const nb=r.board, me=groupInfo(nb,x,y);
+  switch(p.theme){
+    case "capture":{
+      const t=p._t||(p._t=captureTargets(p)), cap=new Set(r.captured.map(([a,c])=>K(a,c)));
+      if(t.length&&t.every(([a,c])=>cap.has(K(a,c)))) return {legal:true,ok:true,r};
+      const dots=libsOfStones(nb,t);
+      return {legal:true,ok:false,r,dots,msg:`ざんねん！ しろの あきが まだ ${dots.length}つ あるね。`};
+    }
+    case "escape":{
+      const g=groupInfo(nb,...p.target), n=g.libs.size;
+      if(n>=3||(r.captured.length>0&&n>=2)) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:libsOfStones(nb,[p.target]),
+        msg:`ざんねん！ くろの あきが ${n}つしか ないね。あきが ふえる ほうへ にげましょう。`};
+    }
+    case "double":{
+      const at=groupsOf(nb,WHITE).filter(g=>g.libs.size===1).length;
+      if(at>=2&&me.libs.size>=2) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:libsOfStones(nb,groupsOf(nb,WHITE).map(g=>g.stones[0])),
+        msg: at>=2 ? "ざんねん！ くろが すぐに とられて しまうね。"
+                   : `ざんねん！ あたりに なった しろは ${at}つだね。2つ いっぺんに ねらいましょう。`};
+    }
+    case "connect":{
+      if(p.kind==="cut"){
+        if(!canConnect(nb,p.target)&&me.libs.size>=2) return {legal:true,ok:true,r};
+        return {legal:true,ok:false,r,dots:[],msg:"ざんねん！ しろは まだ つながる ことが できるね。"};
+      }
+      if(sameGroup(nb,p.target)&&groupInfo(nb,...p.target[0]).libs.size>=2) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:[],msg:"ざんねん！ くろは まだ きられて しまうね。"};
+    }
+    case "eyes":{
+      const open=p.space.filter(([a,c])=>nb[c][a]===EMPTY&&play(nb,a,c,WHITE).ok);
+      if(open.length===0) return {legal:true,ok:true,r};
+      return {legal:true,ok:false,r,dots:open,msg:"ざんねん！ あおい ● に しろが はいれるので、まだ「め」が 2つ ないね。"};
+    }
+  }
+  return {legal:true,ok:false,r,dots:[],msg:"ざんねん！"};
+}
+// しろが 1て で つながれるか
+function canConnect(b,stones){
+  if(sameGroup(b,stones)) return true;
+  for(let y=0;y<b.length;y++)for(let x=0;x<b.length;x++){
+    if(b[y][x]!==EMPTY) continue;
+    const r=play(b,x,y,WHITE); if(r.ok&&sameGroup(r.board,stones)) return true;
+  }
+  return false;
+}
+/* ---------- しちょう・げた：しろの にげかた と、つかまえる てじゅんの よみ ----------
+   しろは「のびる」か「あたりの くろを とる」で にげる。
+   くろの ては、しろの どの にげかたにも とれる ときだけ「せいかい」とする。 */
+function whiteReplies(b,target){
+  const g=groupInfo(b,...target), cand=new Set(g.libs);
+  g.stones.forEach(([x,y])=>neighbors(b,x,y).forEach(([a,c])=>{
+    if(b[c][a]===BLACK){ const bg=groupInfo(b,a,c); if(bg.libs.size===1) bg.libs.forEach(k=>cand.add(k)); }
+  }));
+  const out=[];
+  [...cand].forEach(k=>{
+    const [x,y]=k.split(",").map(Number), r=play(b,x,y,WHITE);
+    if(r.ok) out.push({x,y,board:r.board});
+  });
+  return out;
+}
+function shichoCands(b,target){
+  const g=groupInfo(b,...target), set=new Set();
+  g.stones.forEach(([sx,sy])=>{
+    for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){
+      if(Math.abs(dx)+Math.abs(dy)>2) continue;
+      const x=sx+dx,y=sy+dy;
+      if(x>=0&&y>=0&&x<b.length&&y<b.length&&b[y][x]===EMPTY) set.add(K(x,y));
+    }
+  });
+  return [...set].map(k=>k.split(",").map(Number));
+}
+// くろが depth て いないで かならず とれる ときの さいしょの て（なければ null）
+// おなじ きょくめんを なんども よまないように おぼえておく（SMEMO）
+const SMEMO=new Map();
+function solveShicho(b,target,depth){
+  const key=b.map(r=>r.join("")).join("")+"|"+target+"|"+depth;
+  if(SMEMO.has(key)) return SMEMO.get(key);
+  if(SMEMO.size>200000) SMEMO.clear();
+  let ans=null;
+  const moves=[];
+  for(const [x,y] of shichoCands(b,target)){
+    const r=play(b,x,y,BLACK); if(!r.ok) continue;
+    if(r.board[target[1]][target[0]]===EMPTY){ ans=[x,y]; break; }
+    const n=groupInfo(r.board,...target).libs.size;
+    if(depth<=1||n>2) continue;
+    moves.push({x,y,r,n});
+  }
+  if(!ans){
+    moves.sort((a,c)=>a.n-c.n);   // あたりの てを さきに よむ
+    for(const m of moves){
+      const ws=whiteReplies(m.r.board,target);
+      if(ws.every(w=>solveShicho(w.board,target,depth-1))){ ans=[m.x,m.y]; break; }
+    }
+  }
+  SMEMO.set(key,ans);
+  return ans;
+}
+const SHICHO_MAX=7;
+// いちばん みじかい てじゅんの さいしょの て
+function bestShicho(b,target){
+  for(let d=1;d<=SHICHO_MAX;d++){ const m=solveShicho(b,target,d); if(m) return m; }
+  return null;
+}
+// くろが おいた あと：しろが いちばん ねばる にげかた（にげきれるなら その て）
+function whiteBest(b,target){
+  const ws=whiteReplies(b,target); if(!ws.length) return {board:b,escaped:false,move:null};
+  let best=null,bestD=-1;
+  for(const w of ws){
+    let d=0; for(let k=1;k<=SHICHO_MAX;k++){ if(solveShicho(w.board,target,k)){ d=k; break; } }
+    if(d===0) return {board:w.board,escaped:true,move:w};
+    if(d>bestD){ bestD=d; best=w; }
+  }
+  return {board:best.board,escaped:false,move:best};
+}
+
+/* =================================================================
+   5. どりるの がめん
+   ================================================================= */
+const pBoard=new GoBoard($("board"),"d");
+let P=null;   // いまの もんだいの じょうたい
+let curTheme="capture";
+const themeOf=k=>THEMES.find(t=>t.key===k);
+
+function renderHome(){
+  $("rulesProg").textContent=`よんだ ${REC.rules.length} / ${RULES.length}`;
+  const box=$("themes"); box.innerHTML="";
+  THEMES.forEach(t=>{
+    const ps=DRILL[t.key], done=ps.filter(p=>REC.drill[p.id]).length, star=ps.filter(p=>REC.drill[p.id]===2).length;
+    const bt=document.createElement("button");
+    bt.className="btn tcard";
+    bt.innerHTML=`<span class="ic">${t.icon}</span><span class="nm">${t.name}</span><span class="ct">できた ${done} / ${ps.length}　⭐${star}</span>
+      <div class="mini"><div style="width:${done/ps.length*100}%"></div></div>`;
+    bt.onclick=()=>openList(t.key);
+    box.appendChild(bt);
+  });
+}
+function openList(key){
+  curTheme=key; const t=themeOf(key);
+  $("lTitle").textContent=`${t.icon} ${t.name}`;
+  $("lDesc").textContent=t.desc;
+  const box=$("plist"); box.innerHTML="";
+  DRILL[key].forEach((p,i)=>{
+    const s=REC.drill[p.id]||0, bt=document.createElement("button");
+    bt.className="btn pbtn"+(s?" s"+s:"");
+    bt.innerHTML=`${i+1}`+(s?`<span class="mk">${s===2?"⭐":"💡"}</span>`:"");
+    bt.onclick=()=>openProblem(key,i);
+    box.appendChild(bt);
+  });
+  show("list");
+}
+function openProblem(key,i){
+  curTheme=key; const p=DRILL[key][i], t=themeOf(key);
+  P={p,i,board:makeBoard(p),hint:0,usedAns:false,done:false,wrong:null,dots:[],last:null};
+  $("pTitle").textContent=`${t.icon} ${i+1} / ${DRILL[key].length}`;
+  $("pTask").textContent=t.task(p);
+  $("prevBtn").disabled=i===0; $("nextBtn").disabled=i===DRILL[key].length-1;
+  $("hintBtn").textContent="ひんと"; $("hintBtn").disabled=false;
+  $("hintRow").classList.remove("hidden"); $("doneRow").classList.add("hidden");
+  pBoard.enabled=true; pBoard.color=BLACK;
+  setMsgEl($("msg"),"info","くろの ばんです。おきたい ところを おしてください。");
+  pBoard.set(P.board); show("play");
+}
+function markStones(){
+  const p=P.p, b=P.board;
+  if(p.theme==="capture") return p._t||(p._t=captureTargets(p));
+  if(p.theme==="escape"||p.theme==="shicho") return b[p.target[1]][p.target[0]]===EMPTY?[]:groupInfo(b,...p.target).stones;
+  if(p.theme==="eyes") return p.space;
+  return p.target;
+}
+function answerPoint(){
+  if(P.p.theme==="shicho") return P.ans||(P.ans=bestShicho(P.board,P.p.target));
+  return P.p.answer;
+}
+pBoard.extra=g=>{
+  const o=[];
+  if(P.last) o.push(OV.last(g,...P.last));
+  if(P.dots) P.dots.forEach(([x,y])=>o.push(OV.dot(g,x,y)));
+  if(!P.done&&P.hint>=2) markStones().forEach(([x,y])=>o.push(OV.ring(g,x,y)));
+  if(!P.done&&P.hint>=3){ const a=answerPoint(); if(a) o.push(OV.blinkRing(g,...a)); }
+  if(P.wrong) o.push(OV.cross(g,...P.wrong));
+  return o;
+};
+pBoard.onPlace=(x,y)=>{
+  if(P.done) return;
+  P.wrong=null; P.dots=[];
+  const p=P.p;
+  if(p.theme==="shicho") return placeShicho(x,y);
+  const j=judge(p,P.board,x,y);
+  if(!j.legal){ P.wrong=[x,y]; P.dots=[]; SND.bad(); setMsgEl($("msg"),"bad","そこには おけません。ほかの ところを さがしましょう。"); return; }
+  if(j.ok){ P.board=j.r.board; P.last=[x,y]; pBoard.b=P.board; return solved(); }
+  P.wrong=[x,y]; P.dots=j.dots||[]; SND.bad(); setMsgEl($("msg"),"bad",j.msg);
+};
+function placeShicho(x,y){
+  const p=P.p, r=play(P.board,x,y,BLACK);
+  if(!r.ok){ P.wrong=[x,y]; SND.bad(); setMsgEl($("msg"),"bad","そこには おけません。ほかの ところを さがしましょう。"); return; }
+  if(r.board[p.target[1]][p.target[0]]===EMPTY){ P.board=r.board; P.last=[x,y]; pBoard.b=P.board; return solved(); }
+  const loose=groupInfo(r.board,...p.target).libs.size>2;
+  const w=loose?null:whiteBest(r.board,p.target);
+  if(loose||w.escaped){
+    const after=loose?r.board:w.board;
+    P.wrong=[x,y]; P.dots=libsOfStones(after,[p.target]); SND.bad();
+    setMsgEl($("msg"),"bad", loose ? `ざんねん！ しろの あきが ${P.dots.length}つ あって、にげられて しまうね。`
+                                   : "ざんねん！ そこだと しろに にげられて しまうね。");
+    return;
+  }
+  P.board=w.board; P.last=w.move?[w.move.x,w.move.y]:[x,y]; pBoard.b=P.board; P.dots=[]; P.ans=null;
+  SND.put();
+  setMsgEl($("msg"),"info","いいですね！ しろが にげました（あかい ◯ が しろの いし）。つづけて おいかけましょう。");
+}
+function solved(){
+  P.done=true; P.wrong=null; P.dots=[];
+  const prev=REC.drill[P.p.id]||0, now=P.usedAns?1:2;
+  REC.drill[P.p.id]=Math.max(prev,now); saveRec();
+  SND.good(); celebrate();
+  setMsgEl($("msg"),"good", P.usedAns?"できました！ 🎉 つぎは じぶんで やってみよう":"できました！ 🎉 すごい！");
+  $("hintRow").classList.add("hidden"); $("doneRow").classList.remove("hidden");
+  const last=P.i>=DRILL[curTheme].length-1;
+  $("bigNext").textContent= last ? "いちらんへ もどる ▶" : "つぎの もんだいへ ▶";
+  pBoard.enabled=false; pBoard.draw();
+}
+$("hintBtn").onclick=()=>{
+  if(P.done) return;
+  P.hint=Math.min(3,P.hint+1); P.wrong=null; P.dots=[];
+  const p=P.p;
+  if(P.hint===1){ setMsgEl($("msg"),"hint","💡 "+p.hint); $("hintBtn").textContent="もっと ひんと"; }
+  if(P.hint===2){ setMsgEl($("msg"),"hint","💡 あかい ◯ を よく みてください。"); $("hintBtn").textContent="こたえを みる"; }
+  if(P.hint===3){ P.usedAns=true; setMsgEl($("msg"),"hint","ひかっている ◯ に おくと できます。おいてみましょう！"); $("hintBtn").disabled=true; }
+  pBoard.draw();
+};
+$("retryBtn").onclick=()=>openProblem(curTheme,P.i);
+$("prevBtn").onclick=()=>{ if(P.i>0) openProblem(curTheme,P.i-1); };
+$("nextBtn").onclick=()=>{ if(P.i<DRILL[curTheme].length-1) openProblem(curTheme,P.i+1); };
+$("bigNext").onclick=()=>{ if(P.i<DRILL[curTheme].length-1) openProblem(curTheme,P.i+1); else openList(curTheme); };
+$("pBack").onclick=()=>openList(curTheme);
+$("lBack").onclick=()=>{ renderHome(); show("home"); };
+$("pSpk").onclick=()=>speak($("pTask").textContent+"。"+$("msg").textContent);
+
+/* =================================================================
+   6. るーるの せつめい（11すてっぷ）
+   ・n: ばんの おおきさ / black, white: さいしょの いし
+   ・turn: さいしょの ばん / alt: かわりばんこに おくか
+   ・libs: あきを あおい ● で みせる いろ（BLACK / WHITE）
+   ・rings: ひかる ◯ / count: じんちを かぞえる すてっぷ
+   ・after(r,x,y): おいた あとの ことば / bad: おけない ときの ことば
+   ・quiz: たしかめ もんだい
+       type:"choice" … えを みて えらぶ（fig＝え、choices、answer＝せいかいの ばんごう）
+       type:"tap"    … ばんに おいて こたえる（prob＝どりると おなじ かたち）
+   ================================================================= */
+const RULES=[
+  { title:"① いしの おきかた", n:5, black:[], white:[], turn:BLACK, alt:true,
+    text:["くろと しろが、かわりばんこに おきます。くろが さきです。",
+          "いしは、せんと せんが <b>まじわる ところ</b>に おきます。",
+          "おいた いしは うごかしません。"],
+    start:"ばんの うえを おすと、いしが おけます。",
+    after:()=>`じょうずです！ つぎは ${cname(RS.turn)}の ばんです。`,
+    quiz:{ type:"choice", q:"いしは どこに おきますか？", fig:{n:5,black:[[2,2]],white:[[1,1]]},
+      choices:["せんが まじわる ところ","ますの まんなか"], answer:0,
+      ok:"せいかい！ いしは せんが まじわる ところに おきます。", ng:"ちがいます。せんが まじわる ところに おきます。" } },
+
+  { title:"② いしの とりかた", n:5, black:[[1,2],[3,2]], white:[[2,2]], turn:BLACK, libs:WHITE,
+    text:["いしの となりの あいている ところを <b>あき</b> と いいます。",
+          "あいての いしの あきを <b>ぜんぶ ふさぐ</b>と、とれます。",
+          "あきが あと 1つの ときを <b>あたり</b> と いいます。"],
+    start:"あおい ● が しろの あきです。くろで ふさいでみましょう。",
+    after:r=>{
+      if(r.captured.length){ RS.done=true; return "とれました！ あきを ぜんぶ ふさぐと とれます。"; }
+      if(groupsOf(RS.board,WHITE).some(g=>g.libs.size===1)) return "「あたり」です！ あと 1つで とれます。";
+      return "あおい ● の ところを ふさいでみましょう。";
+    },
+    quiz:{ type:"tap", q:"しろを とりましょう。ばんに おいて こたえてね。",
+      prob:{theme:"capture",n:5,black:[[1,2],[3,2],[2,1]],white:[[2,2]],answer:[2,3]},
+      ok:"せいかい！ あきを ぜんぶ ふさいで とれました。" } },
+
+  { title:"③ にげる", n:5, black:[[2,2]], white:[[1,2],[3,2],[2,1]], turn:BLACK, libs:BLACK,
+    text:["じぶんの いしが <b>あたり</b>に なったら、にげましょう。",
+          "あいている ほうへ <b>のばす</b>と、あきが ふえて とられません。"],
+    start:"くろが あたりです。あおい ● は くろの あきです。にげてみましょう。",
+    after:()=>{
+      const n=groupInfo(RS.board,2,2).libs.size;
+      if(n>=3){ RS.done=true; return `にげられました！ あきが ${n}つに ふえました。`; }
+      return "くろの あきを ふやすように おいてみましょう。";
+    },
+    quiz:{ type:"tap", q:"くろを にがしましょう。ばんに おいて こたえてね。",
+      prob:{theme:"escape",n:5,black:[[2,2]],white:[[1,2],[3,2],[2,3]],target:[2,2],answer:[2,1]},
+      ok:"せいかい！ のばして あきが ふえました。" } },
+
+  { title:"④ おけない ところ", n:7, turn:WHITE, rings:[[1,3],[5,3]],
+    black:[[0,3],[2,3],[1,2],[1,4],[4,3],[5,2],[5,4],[6,3]], white:[[6,2],[6,4]],
+    text:["まわりを ぜんぶ あいての いしに かこまれた ところには <b>おけません</b>。",
+          "でも、おくと あいての いしが <b>とれる</b> ときは おけます。"],
+    start:"しろの ばんです。2つの ◯ に おいて くらべてみましょう。",
+    after:r=> r.captured.length ? "とれる ときは おけます！ くろが 1つ とれました。"
+                                : "そこには おけます。◯ にも おいてみましょう。",
+    bad:{ suicide:"そこには おけません。まわりを ぜんぶ くろに かこまれているからです。" },
+    quiz:{ type:"choice", q:"しろは ◯ に おけますか？", fig:{n:5,black:[[1,2],[3,2],[2,1],[2,3]],white:[],rings:[[2,2]]},
+      choices:["おける","おけない"], answer:1,
+      ok:"せいかい！ まわりを ぜんぶ かこまれているので おけません。", ng:"ちがいます。くろが とれないので、おけません。" } },
+
+  { title:"⑤ つなぐ・きる", n:5, black:[[1,2],[3,2]], white:[[2,1]], turn:BLACK, rings:[[2,2]],
+    text:["となりあった いしは <b>つながって</b> います。",
+          "あいだに あいての いしが はいると <b>きられて</b> しまいます。",
+          "きられる まえに <b>つなぎ</b>ましょう。"],
+    start:"くろが 2つ はなれています。◯ に おいて つないでみましょう。",
+    after:()=>{
+      if(sameGroup(RS.board,[[1,2],[3,2]])){ RS.done=true; return "つながりました！ もう きられません。"; }
+      return "◯ に おくと、くろが つながります。";
+    },
+    quiz:{ type:"tap", q:"くろを つなぎましょう。ばんに おいて こたえてね。",
+      prob:{theme:"connect",kind:"connect",n:5,black:[[2,1],[2,3]],white:[[1,2]],target:[[2,1],[2,3]],answer:[2,2]},
+      ok:"せいかい！ くろが つながりました。" } },
+
+  { title:"⑥「め」とは なにか", n:5, turn:BLACK, rings:[[2,2]],
+    black:[], white:[[1,1],[2,1],[3,1],[1,2],[3,2],[1,3],[2,3],[3,3]],
+    text:["じぶんの いしで ぐるりと かこんだ、あいている ところを <b>「め」</b> と いいます。",
+          "あいては「め」の なかに すぐには おけません。"],
+    start:"ひかっている ◯ が しろの「め」です。くろで おいてみましょう。",
+    after:()=>"そこには おけます。こんどは ひかっている ◯ に おいてみましょう。",
+    bad:{ suicide:"「め」には おけません。まわりが ぜんぶ しろだからです。" },
+    quiz:{ type:"choice", q:"しろの「め」は いくつ ありますか？",
+      fig:{n:5,white:[[0,0],[2,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1]],black:[]},
+      choices:["1つ","2つ","3つ"], answer:1,
+      ok:"せいかい！「め」は 2つ あります。", ng:"ちがいます。しろに かこまれた あきを かぞえてみましょう。" } },
+
+  { title:"⑦ いきている いし", n:7, turn:BLACK, rings:[[1,0],[3,0],[1,6]],
+    black:[[5,0],[5,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[0,4],[1,4],[2,4],[3,4],[3,5],[3,6]],
+    white:[[0,0],[2,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1],[0,6],[2,6],[0,5],[1,5],[2,5]],
+    text:["<b>「め」が 2つ</b> ある いしは とられません。これを <b>いきている いし</b> と いいます。",
+          "<b>「め」が 1つ</b> だけだと、とられて しまいます。"],
+    start:"うえの しろは「め」が 2つ、したは 1つです。◯ に おいてみましょう。",
+    after:r=> r.captured.length ? "とれました！「め」が 1つだけだと、とられて しまいます。"
+                                : "そこには おけます。◯ に おいてみましょう。",
+    bad:{ suicide:(x,y)=> y===0 ? "おけません！「め」が 2つ ある しろは とれません。いきている いし です。"
+                                : "そこには おけません。まわりを ぜんぶ かこまれているからです。" },
+    quiz:{ type:"choice", q:"とられない しろは どっち？",
+      fig:{n:7,black:[[5,0],[5,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[0,4],[1,4],[2,4],[3,4],[3,5],[3,6]],
+           white:[[0,0],[2,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1],[0,6],[2,6],[0,5],[1,5],[2,5]],
+           labels:[[2,1,"あ"],[1,5,"い"]]},
+      choices:["あ","い"], answer:0,
+      ok:"せいかい！「あ」は「め」が 2つ あるので とられません。", ng:"ちがいます。「め」が いくつ あるか かぞえてみましょう。" } },
+
+  { title:"⑧ かけめ", n:6, turn:BLACK, rings:[[3,0]],
+    black:[[0,2],[1,2],[2,2],[3,2],[4,1],[5,0]], white:[[0,0],[2,0],[0,1],[1,1],[2,1],[3,1],[4,0]],
+    text:["「め」に みえても、まわりの いしが <b>つながっていない</b> ものは ほんとうの「め」では ありません。",
+          "これを <b>かけめ</b> と いいます。"],
+    start:"◯ は「め」に みえますが、かけめ です。くろで おいてみましょう。",
+    after:r=>{
+      if(r.captured.length===1){ RS.rings=[[1,0]]; return "1つ とれました！ のこりの「め」は 1つです。◯ にも おきましょう。"; }
+      if(r.captured.length>1){ RS.done=true; RS.rings=[]; return "ぜんぶ とれました！ かけめ は ほんとうの「め」では ありません。"; }
+      return "そこには おけます。◯ に おいてみましょう。";
+    },
+    bad:{ suicide:(x,y)=> (x===1&&y===0) ? "まだ おけません。さきに かけめ の ◯ に おいてみましょう。"
+                                         : "そこには おけません。まわりを ぜんぶ かこまれているからです。" },
+    quiz:{ type:"choice", q:"◯ は ほんとうの「め」ですか？",
+      fig:{n:6,black:[[0,2],[1,2],[2,2],[3,2],[4,1],[5,0]],white:[[0,0],[2,0],[0,1],[1,1],[2,1],[3,1],[4,0]],rings:[[3,0]]},
+      choices:["ほんとうの「め」","かけめ"], answer:1,
+      ok:"せいかい！ まわりの しろが つながっていないので かけめ です。", ng:"ちがいます。まわりの しろが つながっているか みてみましょう。" } },
+
+  { title:"⑨ いろんな いきの かたち", n:9, turn:BLACK, rings:[[1,0],[3,0],[0,6],[2,8],[8,1],[8,4]],
+    white:[[0,0],[2,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1],[0,5],[1,5],[1,6],[0,7],[1,7],[1,8],[2,7],[3,7],[3,8],[0,8],[7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[8,0],[8,2],[8,3],[8,5]],
+    black:[[0,2],[0,4],[1,2],[1,4],[2,2],[2,5],[2,6],[3,2],[3,6],[4,2],[4,7],[4,8],[5,0],[5,1],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[7,6],[8,6]],
+    text:["「め」が 2つ あれば、どんな かたちでも <b>いきて</b> います。",
+          "うえは <b>まっすぐ</b>、したは <b>まがった</b> かたち、みぎは <b>はなれた</b> かたちです。"],
+    start:"◯ が それぞれの「め」です。くろで おいてみましょう。",
+    after:()=>"そこには おけます。◯ に おいてみましょう。",
+    bad:{ suicide:(x,y)=> [[1,0],[3,0],[0,6],[2,8],[8,1],[8,4]].some(([a,b])=>a===x&&b===y)
+      ? "「め」が 2つ あるので おけません。この しろは いきて います！"
+      : "そこには おけません。まわりを ぜんぶ かこまれているからです。" },
+    quiz:{ type:"choice", q:"この しろは とられますか？",
+      fig:{n:5,white:[[3,0],[3,1],[3,2],[3,3],[3,4],[4,0],[4,2],[4,4]],black:[[2,0],[2,1],[2,2],[2,3],[2,4]]},
+      choices:["とられる","とられない"], answer:1,
+      ok:"せいかい！「め」が 2つ あるので とられません。", ng:"ちがいます。「め」が いくつ あるか かぞえてみましょう。" } },
+
+  { title:"⑩ こう", n:5, turn:BLACK, alt:true, rings:[[2,2]],
+    black:[[1,1],[0,2],[1,3]], white:[[2,1],[1,2],[3,2],[2,3]],
+    text:["1つずつ とったり とられたりが ずっと つづく かたちを <b>こう</b> と いいます。",
+          "こうで とられたら、<b>すぐには とりかえせません</b>。いちど ほかの ところに おいてから とりかえします。"],
+    start:"まず くろで、ひかっている ◯ に おいてみましょう。しろを 1つ とれます。",
+    after:r=>{
+      if(r.ko){ RS.rings=[r.ko]; return `とれました！ つぎは ${cname(RS.turn)}の ばんです。◯ に おいて とりかえしてみましょう。`; }
+      RS.rings=[]; return `${cname(RS.turn)}の ばんです。`;
+    },
+    bad:{ ko:"これが「こう」です。すぐには とれません。ほかに おきましょう。" },
+    quiz:{ type:"choice", q:"くろが いま とった ところです。しろは すぐに ◯ に おいて とりかえせますか？",
+      fig:{n:5,black:[[1,1],[0,2],[1,3],[2,2]],white:[[2,1],[3,2],[2,3]],rings:[[1,2]]},
+      choices:["とりかえせる","すぐには できない"], answer:1,
+      ok:"せいかい！ こう なので、すぐには とりかえせません。", ng:"ちがいます。こう は すぐには とりかえせません。" } },
+
+  { title:"⑪ おわりと かちまけ", n:5, count:true,
+    black:[[2,0],[2,1],[2,2],[2,3],[2,4]], white:[[3,0],[3,1],[3,2],[3,3],[3,4]],
+    text:["おく ところが なくなったら おわりです。",
+          "じぶんの いしで かこんだ ところを <b>じんち</b>（おうち）と いいます。",
+          "じんちが ひろい ほうが <b>かち</b>です。とった いしも かぞえます。"],
+    start:"ばんを おすと、じんちが みえます。",
+    quiz:{ type:"choice", q:"じんちが ひろいのは どっち？",
+      fig:{n:5,black:[[1,0],[1,1],[1,2],[1,3],[1,4]],white:[[2,0],[2,1],[2,2],[2,3],[2,4]]},
+      choices:["くろ","しろ"], answer:1,
+      ok:"せいかい！ しろの じんちは 10、くろは 5。しろの かちです。", ng:"ちがいます。かこんだ ところを かぞえてみましょう。" } },
+];
+
+const rBoard=new GoBoard($("rBoard"),"r");
+let rStep=0, rPhase="learn";
+const RS={};
+function rMsg(kind,t){ setMsgEl($("rMsg"),kind,t); }
+function renderDots(){
+  $("rDots").innerHTML=RULES.map((_,k)=>`<span class="${REC.rules.includes(k)?"done":""} ${k===rStep?"cur":""}"></span>`).join("");
+  $("rNo").textContent=`${rStep+1} / ${RULES.length}`;
+}
+function openRules(i,phase="learn"){
+  rStep=i; rPhase=phase; const st=RULES[i];
+  renderDots();
+  $("rPrev").disabled=(i===0&&phase==="learn");
+  rBoard.onTapAny=null;
+  if(phase==="learn"){
+    Object.assign(RS,{board:makeBoard(st,st.n),turn:st.turn||BLACK,ko:null,rings:(st.rings||[]).slice(),
+      cross:null,last:null,done:false,showTerr:false});
+    $("rTitle").textContent=st.title;
+    $("rText").innerHTML=st.text.map(t=>`<p>${t}</p>`).join("");
+    $("rChoices").classList.add("hidden");
+    $("rReset").textContent=st.count?"もとに もどす":"もういちど";
+    $("rNext").textContent="たしかめ ▶"; $("rNext").classList.remove("sub2");
+    rBoard.enabled=true; rBoard.color=RS.turn;
+    rBoard.onPlace=learnPlace;
+    if(st.count) rBoard.onTapAny=countTap;
+    rBoard.extra=learnExtra;
+    rMsg("info",st.start);
+    rBoard.set(RS.board);
+  }else{
+    const qz=st.quiz;
+    Object.assign(RS,{qdone:false,cross:null,dots:[],last:null});
+    $("rTitle").textContent="✏️ たしかめ もんだい";
+    $("rText").innerHTML=`<p>${qz.q}</p>`;
+    $("rReset").textContent="もういちど";
+    const last=i===RULES.length-1;
+    $("rNext").textContent= last?"どりるへ ▶":"つぎへ ▶";
+    $("rNext").classList.toggle("sub2",!REC.rules.includes(i));
+    if(qz.type==="choice"){
+      RS.board=makeBoard(qz.fig,qz.fig.n);
+      rBoard.enabled=false; rBoard.extra=g=>{
+        const o=[]; (qz.fig.rings||[]).forEach(([x,y])=>o.push(OV.blinkRing(g,x,y)));
+        (qz.fig.labels||[]).forEach(([x,y,t])=>o.push(OV.label(g,x,y,t))); return o; };
+      const box=$("rChoices"); box.innerHTML=""; box.classList.remove("hidden");
+      qz.choices.forEach((c,k)=>{
+        const bt=document.createElement("button"); bt.className="btn"; bt.textContent=c;
+        bt.onclick=()=>{ if(RS.qdone) return; if(k===qz.answer) quizOk(); else { SND.bad(); rMsg("bad",qz.ng); } };
+        box.appendChild(bt);
+      });
+      rMsg("info","こたえを えらんでね。");
+    }else{
+      const pr=qz.prob;
+      RS.board=makeBoard(pr,pr.n);
+      $("rChoices").classList.add("hidden");
+      rBoard.enabled=true; rBoard.color=BLACK;
+      rBoard.extra=g=>{ const o=[]; if(RS.last) o.push(OV.last(g,...RS.last));
+        (RS.dots||[]).forEach(([x,y])=>o.push(OV.dot(g,x,y))); if(RS.cross) o.push(OV.cross(g,...RS.cross)); return o; };
+      rBoard.onPlace=(x,y)=>{
+        if(RS.qdone) return;
+        RS.cross=null; RS.dots=[];
+        const j=judge(pr,RS.board,x,y);
+        if(!j.legal){ RS.cross=[x,y]; SND.bad(); rMsg("bad","そこには おけません。"); return; }
+        if(j.ok){ RS.board=j.r.board; RS.last=[x,y]; rBoard.b=RS.board; quizOk(); return; }
+        RS.cross=[x,y]; RS.dots=j.dots||[]; SND.bad(); rMsg("bad",j.msg);
+      };
+      rMsg("info","おきたい ところを おしてね。");
+    }
+    rBoard.set(RS.board);
+  }
+  show("rules");
+}
+function quizOk(){
+  RS.qdone=true; rBoard.enabled=false;
+  if(!REC.rules.includes(rStep)){ REC.rules.push(rStep); saveRec(); }
+  SND.good(); celebrate(); rMsg("good","⭐ "+RULES[rStep].quiz.ok);
+  $("rNext").classList.remove("sub2"); renderDots(); rBoard.draw();
+}
+function learnExtra(g){
+  const st=RULES[rStep], o=[];
+  if(st.libs&&!RS.done) libsOfStones(RS.board,groupsOf(RS.board,st.libs).map(gr=>gr.stones[0])).forEach(([x,y])=>o.push(OV.dot(g,x,y)));
+  if(RS.last) o.push(OV.last(g,...RS.last));
+  RS.rings.forEach(([x,y])=>o.push(OV.blinkRing(g,x,y)));
+  if(RS.cross) o.push(OV.cross(g,...RS.cross));
+  if(RS.showTerr){ const t=territory(RS.board);
+    t.black.forEach(([x,y])=>o.push(OV.terr(g,x,y,BLACK))); t.white.forEach(([x,y])=>o.push(OV.terr(g,x,y,WHITE))); }
+  return o;
+}
+function countTap(){
+  const st=RULES[rStep];
+  RS.showTerr=!RS.showTerr;
+  if(RS.showTerr){ const t=territory(RS.board), bn=t.black.length, wn=t.white.length;
+    SND.good();
+    rMsg("good",`くろの じんちは ${bn}、しろの じんちは ${wn}。${bn>wn?"くろの かちです！":bn<wn?"しろの かちです！":"おなじです。"}`);
+  }else rMsg("info",st.start);
+  rBoard.draw();
+}
+function learnPlace(x,y){
+  const st=RULES[rStep];
+  if(RS.done) return;
+  RS.cross=null;
+  const r=play(RS.board,x,y,RS.turn,RS.ko);
+  if(!r.ok){
+    RS.cross=[x,y]; SND.bad();
+    const def={suicide:"そこには おけません。まわりを ぜんぶ かこまれているからです。",ko:"「こう」なので、すぐには とりかえせません。",occupied:"そこには もう いしが あります。"};
+    const bm=st.bad&&st.bad[r.reason];
+    rMsg("bad",(typeof bm==="function"?bm(x,y):bm)||def[r.reason]); return;
+  }
+  RS.board=r.board; RS.ko=r.ko; RS.last=[x,y]; rBoard.b=RS.board;
+  RS.rings=RS.rings.filter(([a,b])=>!(a===x&&b===y));
+  if(st.alt){ RS.turn=RS.turn===BLACK?WHITE:BLACK; rBoard.color=RS.turn; }
+  const m=st.after(r,x,y);
+  if(r.captured.length||RS.done){ SND.good(); rMsg("good",m); } else { SND.put(); rMsg("info",m); }
+}
+$("rReset").onclick=()=>openRules(rStep,rPhase);
+$("rPrev").onclick=()=>{
+  if(rPhase==="quiz") openRules(rStep,"learn");
+  else if(rStep>0) openRules(rStep-1,"learn");
+};
+$("rNext").onclick=()=>{
+  if(rPhase==="learn") return openRules(rStep,"quiz");
+  if(rStep<RULES.length-1) openRules(rStep+1,"learn");
+  else{ renderHome(); show("home"); }
+};
+$("rBack").onclick=()=>{ renderHome(); show("home"); };
+$("rulesBtn").onclick=()=>{ const k=RULES.findIndex((_,i)=>!REC.rules.includes(i)); openRules(k<0?0:k); };
+$("rSpk").onclick=()=>speak($("rTitle").textContent+"。"+$("rText").textContent+"。"+$("rMsg").textContent);
+
+/* ============ はじめる ============ */
+$("resetBtn").onclick=()=>{
+  const b=$("resetBtn");
+  if(b.dataset.confirm){ REC={drill:{},rules:[]}; saveRec(); delete b.dataset.confirm; b.textContent="きろくを けす"; renderHome(); }
+  else{ b.dataset.confirm="1"; b.textContent="ほんとうに けしますか？ もういちど おしてください";
+        setTimeout(()=>{ delete b.dataset.confirm; b.textContent="きろくを けす"; },3000); }
+};
+loadRec(); renderHome();
+</script>
+</body>
+</html>
