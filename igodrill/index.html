@@ -29,6 +29,7 @@
   .btn.orange{background:var(--orange);box-shadow:0 5px 0 #a85f14}
   .btn.big{font-size:26px;padding:14px 6px}
   .btn small{display:block;font-size:16px;font-weight:normal;opacity:.95}
+  a.btn{text-decoration:none;text-align:center}
   .row{display:flex;gap:10px;margin-top:8px}
   .row .btn{flex:1}
   .row.nav .btn{font-size:18px;padding:9px 4px;white-space:nowrap}
@@ -103,8 +104,11 @@
     <div class="stack">
       <button class="btn orange big" id="rulesBtn">📖 るーるの せつめい<small id="rulesProg">0 / 11</small></button>
     </div>
-    <h2>🧩 どりる</h2>
+    <h2>🧩 とっくん</h2>
     <div class="themes" id="themes"></div>
+    <div class="stack" style="margin:14px 0 12px">
+      <a class="btn big" href="https://support-creators.github.io/kokubu-ambitious/igoren/">🎒 もっと やりたい ひとは こちら<small>いごれん（きょうしつ よう）</small></a>
+    </div>
     <button class="btn sub2 reset" id="resetBtn">きろくを けす</button>
   </section>
 
@@ -449,7 +453,7 @@ function fitCurrent(){
 window.addEventListener("resize",fitCurrent);
 
 /* =================================================================
-   4. どりるの もんだい
+   4. とっくんの もんだい
    ・もんだいは 9ろばんの「え」で かきます（1ぎょう 9もじ × 9ぎょう、うえが 0）
        X … くろ　　 O … しろ　　 . … あいている ところ
        x … ねらいの くろ（にがす・つなぐ いし）
@@ -855,7 +859,7 @@ const whiteBest=(b,t)=>whiteBestM(b,[t]);
 const shichoCands=(b,t)=>candsM(b,[t]);
 
 /* =================================================================
-   5. どりるの がめん
+   5. とっくんの がめん
    ================================================================= */
 const pBoard=new GoBoard($("board"),"d");
 let P=null;   // いまの もんだいの じょうたい
@@ -1019,7 +1023,7 @@ $("pSpk").onclick=()=>speak($("pTask").textContent+"。"+$("msg").textContent);
    ・after(r,x,y): おいた あとの ことば / bad: おけない ときの ことば
    ・quiz: たしかめ もんだい
        type:"choice" … えを みて えらぶ（fig＝え、choices、answer＝せいかいの ばんごう）
-       type:"tap"    … ばんに おいて こたえる（prob＝どりると おなじ かたち）
+       type:"tap"    … ばんに おいて こたえる（prob＝とっくんと おなじ かたち）
    ================================================================= */
 const RULES=[
   { title:"① いしの おきかた", n:5, black:[], white:[], turn:BLACK, alt:true,
@@ -1205,7 +1209,7 @@ function openRules(i,phase="learn"){
     $("rText").innerHTML=`<p>${qz.q}</p>`;
     $("rReset").textContent="もういちど";
     const last=i===RULES.length-1;
-    $("rNext").textContent= last?"どりるへ ▶":"つぎへ ▶";
+    $("rNext").textContent= last?"とっくんへ ▶":"つぎへ ▶";
     $("rNext").classList.toggle("sub2",!REC.rules.includes(i));
     if(qz.type==="choice"){
       RS.board=makeBoard(qz.fig,qz.fig.n);
